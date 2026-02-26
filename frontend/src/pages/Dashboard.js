@@ -12,12 +12,21 @@ import {
   ArrowRight
 } from "lucide-react";
 
+import {
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
+  ResponsiveContainer
+} from "recharts";
+
 function Dashboard() {
   const navigate = useNavigate();
   const [showProfile, setShowProfile] = useState(false);
   const [dashboardData, setDashboardData] = useState(null);
 
-  // ✅ Single API Call
+  // 🔥 Fetch Dashboard Data
   useEffect(() => {
     fetch("http://localhost:5000/api/dashboard/diksha@test.com")
       .then(res => res.json())
@@ -29,38 +38,40 @@ function Dashboard() {
       .catch(err => console.error(err));
   }, []);
 
+  // 🔥 Prepare Radar Chart Data
+  const chartData = dashboardData
+    ? dashboardData.skills
+        .concat(dashboardData.missingSkills)
+        .map(skill => ({
+          skill,
+          value: dashboardData.skills.includes(skill) ? 100 : 30
+        }))
+    : [];
+
   const cards = [
     {
       title: "Upload Resume",
-      description: "Let our AI analyze your resume for missing skills and exact keywords to boost your profile.",
+      description: "Let our AI analyze your resume for missing skills and exact keywords.",
       icon: <FileText size={28} color="#00ffcc" />,
-      path: "/resume",
-      color: "#00ffcc",
-      status: "Step 1"
+      path: "/resume"
     },
     {
       title: "Coding Stats",
-      description: "Connect your LeetCode or GitHub to track your algorithm problem-solving performance.",
+      description: "Track your algorithm problem-solving performance.",
       icon: <Code size={28} color="#eab308" />,
-      path: "/coding",
-      color: "#eab308",
-      status: "Step 2"
+      path: "/coding"
     },
     {
       title: "View Analysis",
-      description: "See your overall placement readiness score, detailed feedback, and individual growth metrics.",
+      description: "See your readiness score and detailed feedback.",
       icon: <LineChart size={28} color="#ef4444" />,
-      path: "/analysis",
-      color: "#ef4444",
-      status: "Report"
+      path: "/analysis"
     },
     {
       title: "Explore Domains",
-      description: "Discover new tech career paths and find the exact skills required to master them.",
+      description: "Discover new tech career paths and required skills.",
       icon: <Compass size={28} color="#5b8cff" />,
-      path: "/explore",
-      color: "#5b8cff",
-      status: "Discover"
+      path: "/explore"
     }
   ];
 
@@ -81,8 +92,8 @@ function Dashboard() {
 
           {showProfile && (
             <div style={styles.dropdown}>
-              <div style={styles.dropdownItem}><User size={14}/> View Profile</div>
-              <div style={styles.dropdownItem}><Settings size={14}/> Edit Profile</div>
+              <div style={styles.dropdownItem}><User size={14}/> Profile</div>
+              <div style={styles.dropdownItem}><Settings size={14}/> Settings</div>
               <div style={{...styles.dropdownItem, color:"#ef4444"}}><LogOut size={14}/> Logout</div>
             </div>
           )}
@@ -90,8 +101,6 @@ function Dashboard() {
       </nav>
 
       <main style={styles.main}>
-
-        {/* HERO SECTION */}
         <div style={styles.heroSection}>
           <Sparkles size={28} color="#5b8cff" />
           <h1 style={styles.heading}>
@@ -100,18 +109,16 @@ function Dashboard() {
           </h1>
         </div>
 
-        {/* 🔥 DYNAMIC DASHBOARD DATA */}
+        {/* 🔥 Dashboard Stats Section */}
         {dashboardData && (
           <div style={styles.statsCard}>
             <h2>Welcome {dashboardData.name}</h2>
 
-            <h3 style={{color:"#5b8cff"}}>
+            <h3 style={{ color: "#5b8cff" }}>
               Target Role: {dashboardData.targetRole}
             </h3>
 
-            <h3>
-              Readiness Score: {dashboardData.readinessScore}%
-            </h3>
+            <h3>Readiness Score: {dashboardData.readinessScore}%</h3>
 
             {/* Progress Bar */}
             <div style={styles.progressBar}>
@@ -123,6 +130,7 @@ function Dashboard() {
               ></div>
             </div>
 
+            {/* Skills */}
             <div>
               <strong>Skills:</strong>
               <div>
@@ -134,8 +142,9 @@ function Dashboard() {
               </div>
             </div>
 
-            <div style={{marginTop:"15px"}}>
-              <strong style={{color:"#ef4444"}}>Missing Skills:</strong>
+            {/* Missing Skills */}
+            <div style={{ marginTop: "15px" }}>
+              <strong style={{ color: "#ef4444" }}>Missing Skills:</strong>
               <div>
                 {dashboardData.missingSkills.map((skill, index) => (
                   <span key={index} style={styles.missingTag}>
@@ -145,16 +154,36 @@ function Dashboard() {
               </div>
             </div>
 
-            {/* 🔥 AI Feedback Section */}
+            {/* AI Feedback */}
             {dashboardData.feedback && (
               <div style={styles.feedbackBox}>
                 {dashboardData.feedback}
               </div>
             )}
+
+            {/* 🔥 Radar Graph */}
+            <div style={{ height: "300px", marginTop: "40px" }}>
+              <h3 style={{ marginBottom: "20px" }}>Skill Radar</h3>
+
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart data={chartData}>
+                  <PolarGrid />
+                  <PolarAngleAxis dataKey="skill" />
+                  <PolarRadiusAxis angle={30} domain={[0, 100]} />
+                  <Radar
+                    name="Skill Strength"
+                    dataKey="value"
+                    stroke="#5b8cff"
+                    fill="#5b8cff"
+                    fillOpacity={0.6}
+                  />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         )}
 
-        {/* FEATURE CARDS */}
+        {/* Feature Cards */}
         <div style={styles.gridContainer}>
           {cards.map((card, index) => (
             <div
@@ -171,7 +200,6 @@ function Dashboard() {
             </div>
           ))}
         </div>
-
       </main>
     </div>
   );
