@@ -12,5 +12,7 @@ app.get("/", (req, res) => {
 
 const userRoutes = require("./routes/userRoutes");
 app.use("/api/users", userRoutes);
+const dashboardRoutes = require("./routes/dashboardRoutes");
+app.use("/api/dashboard", dashboardRoutes);
 
 module.exports = app;
