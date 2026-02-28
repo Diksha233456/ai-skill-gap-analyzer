@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "groq-js": "^1.27.1",
     "react-router-dom": "^7.13.1"
   }
 }

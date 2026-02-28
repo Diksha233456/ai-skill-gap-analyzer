@@ -1,509 +1,262 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-function Analysis() {
+function Pill({ label, type }) {
+  const c = {
+    match: { bg: "rgba(34,197,94,0.12)", border: "rgba(34,197,94,0.3)", text: "#22c55e" },
+    missing: { bg: "rgba(239,68,68,0.12)", border: "rgba(239,68,68,0.3)", text: "#ef4444" },
+    neutral: { bg: "rgba(91,140,255,0.12)", border: "rgba(91,140,255,0.3)", text: "#5b8cff" },
+    purple: { bg: "rgba(168,85,247,0.12)", border: "rgba(168,85,247,0.3)", text: "#a855f7" },
+  }[type] || { bg: "rgba(91,140,255,0.12)", border: "rgba(91,140,255,0.3)", text: "#5b8cff" };
+  return (
+    <span style={{ display: "inline-block", padding: "5px 13px", borderRadius: "30px", fontSize: "12px", fontWeight: 600, background: c.bg, border: `1px solid ${c.border}`, color: c.text, margin: "3px" }}>
+      {label}
+    </span>
+  );
+}
+
+function ScoreRing({ score, size = 160 }) {
+  const r = size / 2 - 12;
+  const circ = 2 * Math.PI * r;
+  const [anim, setAnim] = useState(0);
+  const color = score >= 70 ? "#22c55e" : score >= 40 ? "#f59e0b" : "#ef4444";
+  const label = score >= 70 ? "Strong Candidate" : score >= 40 ? "Needs Improvement" : "Not Ready";
+  useEffect(() => { const t = setTimeout(() => setAnim(score), 200); return () => clearTimeout(t); }, [score]);
+  return (
+    <div style={{ position: "relative", width: size, height: size }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="10" />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth="10" strokeLinecap="round"
+          strokeDasharray={circ} strokeDashoffset={circ - (anim / 100) * circ}
+          style={{ transition: "stroke-dashoffset 1.5s cubic-bezier(.4,0,.2,1)", filter: `drop-shadow(0 0 10px ${color})` }}
+          transform={`rotate(-90 ${size / 2} ${size / 2})`} />
+      </svg>
+      <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+        <span style={{ fontSize: "32px", fontWeight: 900, color: "#f8fafc", lineHeight: 1 }}>{score}%</span>
+        <span style={{ fontSize: "9px", color: "#64748b", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.2px", marginTop: "4px" }}>Readiness</span>
+      </div>
+    </div>
+  );
+}
+
+function HirabilityBadge({ value }) {
+  const map = {
+    "Strong Candidate": { color: "#22c55e", bg: "rgba(34,197,94,0.1)", icon: "🏆" },
+    "Needs Improvement": { color: "#f59e0b", bg: "rgba(245,158,11,0.1)", icon: "📈" },
+    "Not Ready": { color: "#ef4444", bg: "rgba(239,68,68,0.1)", icon: "⚠️" },
+  };
+  const s = map[value] || map["Needs Improvement"];
+  return (
+    <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "10px 18px", borderRadius: "30px", background: s.bg, border: `1px solid ${s.color}40`, color: s.color, fontWeight: 700, fontSize: "14px" }}>
+      {s.icon} {value}
+    </div>
+  );
+}
+
+export default function Analysis() {
   const navigate = useNavigate();
   const [showProfile, setShowProfile] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [data, setData] = useState(null);
+  const [noData, setNoData] = useState(false);
 
-  // Mock data
-  const mockData = {
-    readiness: 72,
-    strengths: ["Data Structures & Algorithms", "Backend Development"],
-    weaknesses: ["System Design", "Graph Algorithms"],
-  };
-
-  // Animate the circle on mount
   useEffect(() => {
-    setTimeout(() => {
-      setProgress(mockData.readiness);
-    }, 100);
-  }, [mockData.readiness]);
-
-  // SVG Circle Math
-  const radius = 60;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (progress / 100) * circumference;
+    const stored = sessionStorage.getItem("analysisData");
+    if (stored) {
+      try { setData(JSON.parse(stored)); }
+      catch { setNoData(true); }
+    } else {
+      setNoData(true);
+    }
+  }, []);
 
   return (
-    <div style={styles.page}>
-      {/* Decorative Tech Grid */}
-      <div style={styles.gridOverlay}></div>
+    <div style={S.page}>
+      <style>{`
+        @keyframes fadeInUp { from {opacity:0;transform:translateY(18px);} to {opacity:1;transform:translateY(0);} }
+        @keyframes spin { to {transform:rotate(360deg);} }
+        * { box-sizing:border-box; }
+      `}</style>
+      <div style={S.grid} />
+      <div style={{ ...S.orb, top: "-80px", left: "5%", background: "rgba(91,140,255,0.13)" }} />
+      <div style={{ ...S.orb, bottom: "-60px", right: "5%", background: "rgba(168,85,247,0.1)", width: "380px", height: "380px" }} />
 
-      {/* NAVBAR */}
-      <nav style={styles.navbar}>
-        <div style={styles.navLeft}>
-          {/* NEW BACK BUTTON */}
-          <div
-            style={styles.backButton}
-            onClick={() => navigate(-1)}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = "#f8fafc";
-              e.currentTarget.style.transform = "translateX(-2px)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = "#94a3b8";
-              e.currentTarget.style.transform = "translateX(0px)";
-            }}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="19" y1="12" x2="5" y2="12"></line>
-              <polyline points="12 19 5 12 12 5"></polyline>
+      {/* NAV */}
+      <nav style={S.nav}>
+        <div style={{ display: "flex", alignItems: "center", gap: "28px" }}>
+          <div style={S.back} onClick={() => navigate("/")}
+            onMouseEnter={e => { e.currentTarget.style.color = "#f8fafc"; e.currentTarget.style.transform = "translateX(-3px)"; }}
+            onMouseLeave={e => { e.currentTarget.style.color = "#64748b"; e.currentTarget.style.transform = "translateX(0)"; }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
             </svg>
             Back
           </div>
-
-          <div style={styles.logo} onClick={() => navigate("/")}>
-            <span style={styles.logoHighlight}>AI</span> Skill Gap
-          </div>
+          <span style={S.logo} onClick={() => navigate("/")}><span style={{ color: "#5b8cff" }}>AI</span> Skill Gap</span>
         </div>
-
         <div style={{ position: "relative" }}>
-          <div
-            style={styles.profileIcon}
-            onClick={() => setShowProfile(!showProfile)}
-            onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
-            onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-          >
-            DK
-          </div>
-
+          <div style={S.avatar} onClick={() => setShowProfile(!showProfile)}
+            onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"}
+            onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+          >DK</div>
           {showProfile && (
-            <div style={styles.dropdown}>
-              <div style={styles.dropdownItem}>View Profile</div>
-              <div style={styles.dropdownItem}>Edit Profile</div>
-              <div style={styles.dropdownDivider}></div>
-              <div style={{ ...styles.dropdownItem, color: "#ef4444" }}>Logout</div>
+            <div style={S.drop}>
+              <div style={S.dropItem}>View Profile</div>
+              <div style={{ ...S.dropItem, color: "#ef4444" }}>Logout</div>
             </div>
           )}
         </div>
       </nav>
 
-      {/* MAIN WRAPPER */}
-      <main style={styles.wrapper}>
-        
-        {/* LEFT SECTION */}
-        <div style={styles.left}>
-          <div style={styles.iconBadge}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5b8cff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 20V10"></path>
-              <path d="M18 20V4"></path>
-              <path d="M6 20v-4"></path>
-            </svg>
+      <main style={S.main}>
+        {/* ── No Data ── */}
+        {noData && (
+          <div style={{ ...S.card, maxWidth: "460px", textAlign: "center", animation: "fadeInUp 0.4s ease" }}>
+            <div style={{ fontSize: "52px", marginBottom: "16px" }}>📋</div>
+            <h2 style={{ margin: "0 0 10px", fontSize: "22px", fontWeight: 800 }}>No Analysis Yet</h2>
+            <p style={{ color: "#64748b", fontSize: "14px", lineHeight: "1.7", margin: "0 0 24px" }}>
+              Upload your resume first to get your AI-powered skill gap analysis with personalized feedback.
+            </p>
+            <button onClick={() => navigate("/resume")} style={S.btn}
+              onMouseEnter={e => e.currentTarget.style.boxShadow = "0 14px 32px rgba(91,140,255,0.4)"}
+              onMouseLeave={e => e.currentTarget.style.boxShadow = "0 6px 20px rgba(91,140,255,0.2)"}>
+              Upload Resume →
+            </button>
           </div>
-          <h1 style={styles.heading}>
-            Your Skill <br />
-            <span style={styles.gradientText}>Analysis Report</span>
-          </h1>
-          <p style={styles.description}>
-            Based on your coding stats and resume profile, our AI has evaluated your technical readiness. Review your strengths and target your knowledge gaps to improve your placement chances.
-          </p>
-        </div>
+        )}
 
-        {/* RIGHT CARD */}
-        <div
-          style={styles.card}
-          onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-4px)")}
-          onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0px)")}
-        >
-          {/* Readiness Circle Section */}
-          <div style={styles.circleSection}>
-            <div style={styles.svgWrapper}>
-              <svg width="180" height="180" viewBox="0 0 160 160" style={{ overflow: "visible" }}>
-                <defs>
-                  <linearGradient id="circleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#00ffcc" />
-                    <stop offset="100%" stopColor="#5b8cff" />
-                  </linearGradient>
-                  {/* Neon Glow Filter */}
-                  <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feGaussianBlur stdDeviation="6" result="blur" />
-                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                  </filter>
-                </defs>
-                
-                {/* Background Track */}
-                <circle
-                  cx="80"
-                  cy="80"
-                  r={radius}
-                  fill="none"
-                  stroke="rgba(255,255,255,0.05)"
-                  strokeWidth="12"
-                />
-                
-                {/* Animated Progress Track with Glow */}
-                <circle
-                  cx="80"
-                  cy="80"
-                  r={radius}
-                  fill="none"
-                  stroke="url(#circleGradient)"
-                  strokeWidth="12"
-                  strokeLinecap="round"
-                  strokeDasharray={circumference}
-                  strokeDashoffset={strokeDashoffset}
-                  filter="url(#glow)"
-                  style={{ transition: "stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1)" }}
-                  transform="rotate(-90 80 80)"
-                />
-              </svg>
-              <div style={styles.circleText}>
-                <span style={styles.percentage}>{progress}%</span>
-                <span style={styles.readinessLabel}>Readiness</span>
+        {/* ── Full Analysis ── */}
+        {data && (
+          <div style={{ maxWidth: "860px", width: "100%", animation: "fadeInUp 0.4s ease" }}>
+
+            {/* Hero Row */}
+            <div style={{ ...S.card, marginBottom: "16px", display: "grid", gridTemplateColumns: "auto 1fr", gap: "32px", alignItems: "center" }}>
+              <ScoreRing score={data.readinessScore || 0} size={160} />
+              <div>
+                <div style={{ marginBottom: "12px" }}>
+                  <HirabilityBadge value={data.hirability || "Needs Improvement"} />
+                </div>
+                <h1 style={{ margin: "0 0 6px", fontSize: "24px", fontWeight: 900, letterSpacing: "-0.5px" }}>
+                  {data.name}'s <span style={{ background: "linear-gradient(135deg,#5b8cff,#a855f7)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Analysis Report</span>
+                </h1>
+                <p style={{ margin: "0 0 14px", color: "#64748b", fontSize: "14px" }}>
+                  Target Role: <span style={{ color: "#5b8cff", fontWeight: 700 }}>{data.targetRole}</span>
+                  &nbsp;·&nbsp; {(data.matchedSkills || []).length} of {data.totalRequired} required skills matched
+                </p>
+                <div style={S.feedback}>
+                  <span style={{ marginRight: "8px" }}>💡</span>{data.feedback}
+                </div>
+                {data.topSkillToLearn && (
+                  <div style={{ marginTop: "12px", display: "flex", alignItems: "center", gap: "8px", fontSize: "13px" }}>
+                    <span style={{ background: "rgba(168,85,247,0.15)", border: "1px solid rgba(168,85,247,0.3)", color: "#a855f7", padding: "4px 12px", borderRadius: "20px", fontWeight: 600 }}>
+                      🎯 Top skill to learn: {data.topSkillToLearn}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
 
-          <div style={styles.divider}></div>
-
-          {/* Strengths & Weaknesses */}
-          <div style={styles.dataSection}>
-            
-            {/* Strengths */}
-            <div style={styles.listContainer}>
-              <h3 style={styles.listHeading}>
-                <span style={{...styles.dot, background: '#22c55e', boxShadow: '0 0 8px rgba(34, 197, 94, 0.5)'}}></span>
-                Core Strengths
-              </h3>
-              <ul style={styles.ul}>
-                {mockData.strengths.map((item, index) => (
-                  <li 
-                    key={index} 
-                    style={styles.li}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "rgba(34, 197, 94, 0.08)";
-                      e.currentTarget.style.borderColor = "rgba(34, 197, 94, 0.3)";
-                      e.currentTarget.style.transform = "translateX(4px)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "rgba(255,255,255,0.02)";
-                      e.currentTarget.style.borderColor = "rgba(255,255,255,0.03)";
-                      e.currentTarget.style.transform = "translateX(0)";
-                    }}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
+            {/* Skills Grid */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginBottom: "14px" }}>
+              <div style={S.card}>
+                <h3 style={{ ...S.sec, color: "#22c55e" }}>✅ Matched Skills ({(data.matchedSkills || []).length})</h3>
+                {(data.matchedSkills || []).length > 0
+                  ? (data.matchedSkills || []).map((s, i) => <Pill key={i} label={s} type="match" />)
+                  : <p style={S.empty}>No matching skills found.</p>}
+              </div>
+              <div style={S.card}>
+                <h3 style={{ ...S.sec, color: "#ef4444" }}>⚠️ Missing Skills ({(data.missingSkills || []).length})</h3>
+                {(data.missingSkills || []).length > 0
+                  ? (data.missingSkills || []).map((s, i) => <Pill key={i} label={s} type="missing" />)
+                  : <p style={{ color: "#22c55e", fontSize: "13px", margin: 0, fontWeight: 600 }}>🎉 You have all required skills!</p>}
+              </div>
             </div>
 
-            {/* Weaknesses */}
-            <div style={styles.listContainer}>
-              <h3 style={styles.listHeading}>
-                <span style={{...styles.dot, background: '#ef4444', boxShadow: '0 0 8px rgba(239, 68, 68, 0.5)'}}></span>
-                Areas to Improve
-              </h3>
-              <ul style={styles.ul}>
-                {mockData.weaknesses.map((item, index) => (
-                  <li 
-                    key={index} 
-                    style={styles.li}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "rgba(239, 68, 68, 0.08)";
-                      e.currentTarget.style.borderColor = "rgba(239, 68, 68, 0.3)";
-                      e.currentTarget.style.transform = "translateX(4px)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "rgba(255,255,255,0.02)";
-                      e.currentTarget.style.borderColor = "rgba(255,255,255,0.03)";
-                      e.currentTarget.style.transform = "translateX(0)";
-                    }}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <line x1="12" y1="8" x2="12" y2="12"></line>
-                      <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                    </svg>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
+            {/* Strengths + Gaps */}
+            {((data.strengths || []).length > 0 || (data.skillGaps || []).length > 0) && (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginBottom: "14px" }}>
+                {(data.strengths || []).length > 0 && (
+                  <div style={S.card}>
+                    <h3 style={{ ...S.sec, color: "#5b8cff" }}>🌟 AI-Identified Strengths</h3>
+                    {data.strengths.map((s, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "10px", marginBottom: "10px" }}>
+                        <span style={{ color: "#5b8cff", fontSize: "16px", flexShrink: 0, marginTop: "1px" }}>▸</span>
+                        <span style={{ fontSize: "13px", color: "#cbd5e1", lineHeight: "1.5" }}>{s}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {(data.skillGaps || []).length > 0 && (
+                  <div style={S.card}>
+                    <h3 style={{ ...S.sec, color: "#f59e0b" }}>🎯 Critical Skill Gaps</h3>
+                    {data.skillGaps.map((s, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "10px", marginBottom: "10px" }}>
+                        <span style={{ color: "#f59e0b", fontSize: "16px", flexShrink: 0, marginTop: "1px" }}>▸</span>
+                        <span style={{ fontSize: "13px", color: "#cbd5e1", lineHeight: "1.5" }}>{s}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Action Plan */}
+            {(data.actionPlan || []).length > 0 && (
+              <div style={{ ...S.card, marginBottom: "14px" }}>
+                <h3 style={{ ...S.sec, color: "#a855f7" }}>🚀 Your AI Action Plan</h3>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: "12px" }}>
+                  {data.actionPlan.map((step, i) => (
+                    <div key={i} style={{ background: "rgba(168,85,247,0.05)", border: "1px solid rgba(168,85,247,0.15)", borderRadius: "14px", padding: "14px 16px", display: "flex", gap: "12px", alignItems: "flex-start" }}>
+                      <span style={{ width: "24px", height: "24px", borderRadius: "50%", background: "linear-gradient(135deg,#5b8cff,#a855f7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 800, color: "#fff", flexShrink: 0 }}>
+                        {i + 1}
+                      </span>
+                      <span style={{ fontSize: "13px", color: "#cbd5e1", lineHeight: "1.5" }}>{step}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* All Skills */}
+            {(data.extractedSkills || []).length > 0 && (
+              <div style={{ ...S.card, marginBottom: "14px" }}>
+                <h3 style={S.sec}>🔍 All Extracted Skills ({(data.extractedSkills || []).length})</h3>
+                {data.extractedSkills.map((s, i) => <Pill key={i} label={s} type="neutral" />)}
+              </div>
+            )}
+
+            {/* CTA */}
+            <div style={{ display: "flex", gap: "12px", flexDirection: "row-reverse" }}>
+              <button onClick={() => navigate("/resume")} style={{ ...S.btn, flex: 1 }}
+                onMouseEnter={e => e.currentTarget.style.boxShadow = "0 14px 32px rgba(91,140,255,0.4)"}
+                onMouseLeave={e => e.currentTarget.style.boxShadow = "0 6px 20px rgba(91,140,255,0.2)"}>
+                Re-analyze Resume →
+              </button>
+              <button onClick={() => navigate("/")} style={S.secBtn}>
+                ← Back to Dashboard
+              </button>
             </div>
-
           </div>
-
-          <button 
-            style={styles.button}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.boxShadow = "0 15px 35px rgba(0,255,204,0.4)";
-              e.currentTarget.style.transform = "translateY(-2px)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.boxShadow = "0 10px 25px rgba(0,255,204,0.15)";
-              e.currentTarget.style.transform = "translateY(0)";
-            }}
-          >
-            Generate Learning Roadmap
-          </button>
-        </div>
+        )}
       </main>
     </div>
   );
 }
 
-/* -------------------- STYLES -------------------- */
-
-const styles = {
-  page: {
-    minHeight: "100vh",
-    backgroundColor: "#070b14",
-    background: `
-      radial-gradient(circle at 15% 50%, rgba(91,140,255,0.12), transparent 45%),
-      radial-gradient(circle at 85% 30%, rgba(139,92,246,0.12), transparent 45%),
-      #070b14
-    `,
-    color: "#f8fafc",
-    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-    display: "flex",
-    flexDirection: "column",
-    position: "relative",
-    overflow: "hidden",
-  },
-  gridOverlay: {
-    position: "absolute",
-    top: 0, left: 0, right: 0, bottom: 0,
-    backgroundImage: `
-      linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px)
-    `,
-    backgroundSize: "40px 40px",
-    zIndex: 0,
-    pointerEvents: "none",
-  },
-  navbar: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "24px 60px",
-    borderBottom: "1px solid rgba(255,255,255,0.03)",
-    background: "rgba(7, 11, 20, 0.7)",
-    backdropFilter: "blur(16px)",
-    zIndex: 10,
-  },
-  navLeft: {
-    display: "flex",
-    alignItems: "center",
-    gap: "32px",
-  },
-  backButton: {
-    display: "flex",
-    alignItems: "center",
-    gap: "6px",
-    cursor: "pointer",
-    color: "#94a3b8",
-    fontSize: "15px",
-    fontWeight: 500,
-    transition: "all 0.2s ease",
-  },
-  logo: {
-    fontSize: "22px",
-    fontWeight: 700,
-    letterSpacing: "-0.5px",
-    cursor: "pointer",
-  },
-  logoHighlight: {
-    color: "#5b8cff",
-  },
-  profileIcon: {
-    width: "42px",
-    height: "42px",
-    borderRadius: "12px",
-    background: "linear-gradient(135deg, #5b8cff 0%, #8b5cf6 100%)",
-    color: "white",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontWeight: 600,
-    fontSize: "15px",
-    cursor: "pointer",
-    boxShadow: "0 4px 12px rgba(91,140,255,0.3)",
-    transition: "transform 0.2s ease",
-  },
-  dropdown: {
-    position: "absolute",
-    right: 0,
-    top: "55px",
-    background: "rgba(15, 23, 42, 0.95)",
-    border: "1px solid rgba(255,255,255,0.08)",
-    backdropFilter: "blur(20px)",
-    borderRadius: "12px",
-    width: "160px",
-    boxShadow: "0 20px 40px rgba(0,0,0,0.6)",
-    padding: "8px 0",
-    zIndex: 20,
-  },
-  dropdownItem: {
-    padding: "10px 16px",
-    cursor: "pointer",
-    fontSize: "14px",
-    fontWeight: 500,
-    color: "#e2e8f0",
-  },
-  dropdownDivider: {
-    height: "1px",
-    background: "rgba(255,255,255,0.06)",
-    margin: "4px 0",
-  },
-  wrapper: {
-    flex: 1,
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: "80px",
-    padding: "0 80px",
-    flexWrap: "wrap",
-    zIndex: 1,
-  },
-  left: {
-    maxWidth: "500px",
-  },
-  iconBadge: {
-    width: "56px",
-    height: "56px",
-    borderRadius: "16px",
-    background: "rgba(91,140,255,0.1)",
-    border: "1px solid rgba(91,140,255,0.2)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: "24px",
-    boxShadow: "0 0 20px rgba(91,140,255,0.15)",
-  },
-  heading: {
-    fontSize: "50px",
-    fontWeight: 800,
-    lineHeight: "1.15",
-    marginBottom: "20px",
-    letterSpacing: "-1.5px",
-  },
-  gradientText: {
-    background: "linear-gradient(135deg, #00ffcc 0%, #5b8cff 100%)",
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: "transparent",
-  },
-  description: {
-    fontSize: "18px",
-    color: "#94a3b8",
-    lineHeight: "1.7",
-    fontWeight: 400,
-  },
-  card: {
-    width: "100%",
-    maxWidth: "460px",
-    padding: "40px",
-    borderRadius: "24px",
-    background: "linear-gradient(180deg, rgba(30,41,59,0.4) 0%, rgba(15,23,42,0.4) 100%)",
-    border: "1px solid rgba(255,255,255,0.05)",
-    borderTop: "1px solid rgba(255,255,255,0.15)",
-    backdropFilter: "blur(24px)",
-    boxShadow: "0 30px 60px -15px rgba(0,0,0,0.8)",
-    transition: "transform 0.4s ease",
-    display: "flex",
-    flexDirection: "column",
-  },
-  circleSection: {
-    display: "flex",
-    justifyContent: "center",
-    marginBottom: "30px",
-  },
-  svgWrapper: {
-    position: "relative",
-    width: "180px",
-    height: "180px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  circleText: {
-    position: "absolute",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  percentage: {
-    fontSize: "36px",
-    fontWeight: 800,
-    color: "#f8fafc",
-    letterSpacing: "-1px",
-    lineHeight: "1",
-  },
-  readinessLabel: {
-    fontSize: "12px",
-    color: "#94a3b8",
-    marginTop: "4px",
-    fontWeight: 500,
-    textTransform: "uppercase",
-    letterSpacing: "1px",
-  },
-  divider: {
-    height: "1px",
-    background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)",
-    margin: "0 0 30px 0",
-  },
-  dataSection: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "24px",
-  },
-  listContainer: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "12px",
-  },
-  listHeading: {
-    fontSize: "15px",
-    fontWeight: 600,
-    color: "#f1f5f9",
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    margin: 0,
-  },
-  dot: {
-    width: "8px",
-    height: "8px",
-    borderRadius: "50%",
-  },
-  ul: {
-    listStyleType: "none",
-    padding: 0,
-    margin: 0,
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-  },
-  li: {
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-    fontSize: "15px",
-    color: "#cbd5e1",
-    background: "rgba(255,255,255,0.02)",
-    padding: "12px 16px",
-    borderRadius: "12px",
-    border: "1px solid rgba(255,255,255,0.03)",
-    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-    cursor: "default",
-  },
-  button: {
-    width: "100%",
-    marginTop: "36px",
-    padding: "16px",
-    borderRadius: "12px",
-    border: "none",
-    background: "linear-gradient(135deg, #00ffcc 0%, #5b8cff 100%)",
-    color: "#0f172a", 
-    fontWeight: 700,
-    fontSize: "16px",
-    cursor: "pointer",
-    boxShadow: "0 10px 25px rgba(0,255,204,0.15)",
-    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-  },
+const S = {
+  page: { minHeight: "100vh", background: "#070b14", color: "#f8fafc", fontFamily: "'Inter',-apple-system,sans-serif", position: "relative", overflowX: "hidden" },
+  grid: { position: "fixed", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.015) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.015) 1px,transparent 1px)", backgroundSize: "40px 40px", zIndex: 0, pointerEvents: "none" },
+  orb: { position: "fixed", width: "440px", height: "440px", borderRadius: "50%", filter: "blur(90px)", zIndex: 0, pointerEvents: "none" },
+  nav: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 50px", borderBottom: "1px solid rgba(255,255,255,0.04)", background: "rgba(7,11,20,0.82)", backdropFilter: "blur(20px)", position: "sticky", top: 0, zIndex: 100 },
+  back: { display: "flex", alignItems: "center", gap: "5px", color: "#64748b", fontSize: "14px", fontWeight: 500, cursor: "pointer", transition: "all 0.2s" },
+  logo: { fontSize: "19px", fontWeight: 700, cursor: "pointer", letterSpacing: "-0.5px" },
+  avatar: { width: "40px", height: "40px", borderRadius: "11px", background: "linear-gradient(135deg,#5b8cff,#8b5cf6)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "14px", cursor: "pointer", boxShadow: "0 4px 12px rgba(91,140,255,0.3)", transition: "transform 0.2s" },
+  drop: { position: "absolute", right: 0, top: "52px", background: "rgba(15,23,42,0.96)", border: "1px solid rgba(255,255,255,0.08)", backdropFilter: "blur(20px)", borderRadius: "12px", width: "155px", boxShadow: "0 20px 40px rgba(0,0,0,0.6)", padding: "8px 0", zIndex: 200 },
+  dropItem: { padding: "10px 16px", cursor: "pointer", fontSize: "13px", fontWeight: 500, color: "#e2e8f0" },
+  main: { display: "flex", justifyContent: "center", alignItems: "flex-start", padding: "40px 40px 80px", position: "relative", zIndex: 1 },
+  card: { background: "rgba(15,23,42,0.6)", border: "1px solid rgba(255,255,255,0.06)", borderTop: "1px solid rgba(255,255,255,0.12)", borderRadius: "22px", padding: "26px", backdropFilter: "blur(16px)", boxShadow: "0 28px 55px rgba(0,0,0,0.4)", width: "100%" },
+  feedback: { background: "rgba(91,140,255,0.07)", border: "1px solid rgba(91,140,255,0.15)", borderRadius: "12px", padding: "12px 16px", fontSize: "13px", color: "#94a3b8", lineHeight: "1.6" },
+  btn: { width: "100%", padding: "14px", borderRadius: "12px", border: "none", background: "linear-gradient(135deg,#5b8cff,#8b5cf6)", color: "#fff", fontWeight: 700, fontSize: "14px", cursor: "pointer", fontFamily: "inherit", boxShadow: "0 6px 20px rgba(91,140,255,0.2)", transition: "all 0.3s" },
+  secBtn: { padding: "14px 22px", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#94a3b8", fontWeight: 600, fontSize: "13px", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" },
+  sec: { fontSize: "13px", fontWeight: 700, margin: "0 0 12px", textTransform: "uppercase", letterSpacing: "0.5px" },
+  empty: { fontSize: "13px", color: "#475569", margin: 0, fontStyle: "italic" },
 };
-
-export default Analysis;

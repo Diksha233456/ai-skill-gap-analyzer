@@ -1,52 +1,12 @@
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
-import {
-  FileText,
-  Code,
-  LineChart,
-  Compass,
-  User,
-  Settings,
-  LogOut,
-  Sparkles,
-  ArrowRight
-} from "lucide-react";
+import { useState } from "react";
+import { FileText, Code, LineChart, Compass, User, Settings, LogOut, Sparkles, ArrowRight } from "lucide-react";
 
-import {
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
-  ResponsiveContainer
-} from "recharts";
 
 function Dashboard() {
   const navigate = useNavigate();
   const [showProfile, setShowProfile] = useState(false);
-  const [dashboardData, setDashboardData] = useState(null);
 
-  // 🔥 Fetch Dashboard Data
-  useEffect(() => {
-    fetch("http://localhost:5000/api/dashboard/diksha@test.com")
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          setDashboardData(data);
-        }
-      })
-      .catch(err => console.error(err));
-  }, []);
-
-  // 🔥 Prepare Radar Chart Data
-  const chartData = dashboardData
-    ? dashboardData.skills
-        .concat(dashboardData.missingSkills)
-        .map(skill => ({
-          skill,
-          value: dashboardData.skills.includes(skill) ? 100 : 30
-        }))
-    : [];
 
   const cards = [
     {
@@ -92,9 +52,9 @@ function Dashboard() {
 
           {showProfile && (
             <div style={styles.dropdown}>
-              <div style={styles.dropdownItem}><User size={14}/> Profile</div>
-              <div style={styles.dropdownItem}><Settings size={14}/> Settings</div>
-              <div style={{...styles.dropdownItem, color:"#ef4444"}}><LogOut size={14}/> Logout</div>
+              <div style={styles.dropdownItem}><User size={14} /> Profile</div>
+              <div style={styles.dropdownItem}><Settings size={14} /> Settings</div>
+              <div style={{ ...styles.dropdownItem, color: "#ef4444" }}><LogOut size={14} /> Logout</div>
             </div>
           )}
         </div>
@@ -109,79 +69,7 @@ function Dashboard() {
           </h1>
         </div>
 
-        {/* 🔥 Dashboard Stats Section */}
-        {dashboardData && (
-          <div style={styles.statsCard}>
-            <h2>Welcome {dashboardData.name}</h2>
 
-            <h3 style={{ color: "#5b8cff" }}>
-              Target Role: {dashboardData.targetRole}
-            </h3>
-
-            <h3>Readiness Score: {dashboardData.readinessScore}%</h3>
-
-            {/* Progress Bar */}
-            <div style={styles.progressBar}>
-              <div
-                style={{
-                  ...styles.progressFill,
-                  width: `${dashboardData.readinessScore}%`
-                }}
-              ></div>
-            </div>
-
-            {/* Skills */}
-            <div>
-              <strong>Skills:</strong>
-              <div>
-                {dashboardData.skills.map((skill, index) => (
-                  <span key={index} style={styles.skillTag}>
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Missing Skills */}
-            <div style={{ marginTop: "15px" }}>
-              <strong style={{ color: "#ef4444" }}>Missing Skills:</strong>
-              <div>
-                {dashboardData.missingSkills.map((skill, index) => (
-                  <span key={index} style={styles.missingTag}>
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* AI Feedback */}
-            {dashboardData.feedback && (
-              <div style={styles.feedbackBox}>
-                {dashboardData.feedback}
-              </div>
-            )}
-
-            {/* 🔥 Radar Graph */}
-            <div style={{ height: "300px", marginTop: "40px" }}>
-              <h3 style={{ marginBottom: "20px" }}>Skill Radar</h3>
-
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart data={chartData}>
-                  <PolarGrid />
-                  <PolarAngleAxis dataKey="skill" />
-                  <PolarRadiusAxis angle={30} domain={[0, 100]} />
-                  <Radar
-                    name="Skill Strength"
-                    dataKey="value"
-                    stroke="#5b8cff"
-                    fill="#5b8cff"
-                    fillOpacity={0.6}
-                  />
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        )}
 
         {/* Feature Cards */}
         <div style={styles.gridContainer}>
@@ -195,7 +83,7 @@ function Dashboard() {
               <h3>{card.title}</h3>
               <p>{card.description}</p>
               <div style={styles.cardButton}>
-                Launch Module <ArrowRight size={16}/>
+                Launch Module <ArrowRight size={16} />
               </div>
             </div>
           ))}
@@ -315,7 +203,19 @@ const styles = {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center"
-  }
+  },
+  ctaBtn: {
+    padding: "13px 24px", borderRadius: "12px", border: "none",
+    background: "linear-gradient(135deg, #5b8cff, #8b5cf6)", color: "white",
+    fontWeight: 700, fontSize: "14px", cursor: "pointer", fontFamily: "Inter, sans-serif",
+    boxShadow: "0 6px 20px rgba(91,140,255,0.2)", transition: "all 0.3s ease",
+  },
+  secondaryBtn: {
+    padding: "13px 24px", borderRadius: "12px",
+    border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)",
+    color: "#94a3b8", fontWeight: 600, fontSize: "14px", cursor: "pointer",
+    fontFamily: "Inter, sans-serif", transition: "all 0.2s ease",
+  },
 };
 
 export default Dashboard;
