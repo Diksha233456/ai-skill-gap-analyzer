@@ -158,8 +158,8 @@ function Dashboard() {
 }
 
 const S = {
-  page: { minHeight: "100vh", position: "relative", display: "flex", flexDirection: "column", overflowX: "hidden" },
-  gridOverlay: { position: "fixed", inset: 0, backgroundImage: `linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)`, backgroundSize: "50px 50px", zIndex: 0, pointerEvents: "none" },
+  page: { minHeight: "100vh", position: "relative", display: "flex", flexDirection: "column", overflowX: "hidden", backgroundImage: "url('/ai-bg.png')", backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed" },
+  gridOverlay: { position: "fixed", inset: 0, background: "rgba(5,2,20,0.72)", backgroundImage: `linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)`, backgroundSize: "50px 50px", zIndex: 0, pointerEvents: "none" },
   orb: { position: "fixed", width: "500px", height: "500px", borderRadius: "50%", filter: "blur(130px)", zIndex: 0, pointerEvents: "none" },
 
   navbar: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "22px 60px", borderBottom: "1px solid rgba(255,255,255,0.06)", background: "rgba(13,8,33,0.88)", backdropFilter: "blur(20px)", position: "sticky", top: 0, zIndex: 100 },

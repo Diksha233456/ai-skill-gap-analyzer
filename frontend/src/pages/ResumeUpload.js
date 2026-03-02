@@ -556,8 +556,8 @@ export default function ResumeUpload() {
 }
 
 const S = {
-  page: { minHeight: "100vh", background: "var(--bg-dark)", color: "var(--text-primary)", fontFamily: "'Inter',-apple-system,sans-serif", position: "relative", overflowX: "hidden" },
-  grid: { position: "fixed", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.025) 1px,transparent 1px)", backgroundSize: "50px 50px", zIndex: 0, pointerEvents: "none" },
+  page: { minHeight: "100vh", backgroundImage: "url('/resume-bg.png')", backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed", color: "var(--text-primary)", fontFamily: "'Inter',-apple-system,sans-serif", position: "relative", overflowX: "hidden" },
+  grid: { position: "fixed", inset: 0, background: "rgba(5,2,20,0.76)", backgroundImage: "linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px)", backgroundSize: "50px 50px", zIndex: 0, pointerEvents: "none" },
   orb: { position: "fixed", width: "440px", height: "440px", borderRadius: "50%", filter: "blur(120px)", zIndex: 0, pointerEvents: "none" },
   nav: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 50px", borderBottom: "1px solid rgba(255,255,255,0.06)", background: "rgba(13,8,33,0.88)", backdropFilter: "blur(20px)", position: "sticky", top: 0, zIndex: 100 },
   back: { display: "flex", alignItems: "center", gap: "5px", color: "var(--text-secondary)", fontSize: "14px", fontWeight: 500, cursor: "pointer", transition: "all 0.2s" },

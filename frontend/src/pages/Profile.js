@@ -115,7 +115,7 @@ export default function Profile() {
     const initials = getInitials(user?.name);
 
     if (loading) return (
-        <div style={{ minHeight: "100vh", background: "#0d0821", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ minHeight: "100vh", backgroundImage: "url('/profile-bg.png')", backgroundSize: "cover", backgroundPosition: "center", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <style>{CSS}</style>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
                 <Spinner />
@@ -130,7 +130,7 @@ export default function Profile() {
     const skills = user?.skills?.length ? user.skills : (analysis.extractedSkills || []);
 
     return (
-        <div style={{ minHeight: "100vh", background: "#0d0821", color: "#f1f5f9", fontFamily: "'Inter',-apple-system,sans-serif", position: "relative", overflowX: "hidden" }}>
+        <div style={{ minHeight: "100vh", backgroundImage: "url('/profile-bg.png')", backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed", color: "#f1f5f9", fontFamily: "'Inter',-apple-system,sans-serif", position: "relative", overflowX: "hidden" }}>
             <style>{CSS}</style>
 
             {/* Orbs */}
@@ -141,7 +141,7 @@ export default function Profile() {
             ].map((o, i) => (
                 <div key={i} style={{ position: "fixed", width: o.size, height: o.size, borderRadius: "50%", background: o.bg, filter: "blur(100px)", zIndex: 0, pointerEvents: "none", ...o }} />
             ))}
-            <div style={{ position: "fixed", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px)", backgroundSize: "50px 50px", zIndex: 0, pointerEvents: "none" }} />
+            <div style={{ position: "fixed", inset: 0, background: "rgba(5,2,20,0.74)", backgroundImage: "linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px)", backgroundSize: "50px 50px", zIndex: 0, pointerEvents: "none" }} />
 
 
             <div style={{ display: "flex", gap: "30px", padding: "40px 60px", maxWidth: "1400px", margin: "0 auto", position: "relative", zIndex: 10 }}>
