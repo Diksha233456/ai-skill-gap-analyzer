@@ -270,6 +270,52 @@ Predict what changes for their career. Return ONLY valid JSON:
   return safeJSON(r.choices[0].message.content);
 }
 
+/* ═══════════════════════════════════════════════════════
+   11. CODING STATS ANALYSIS  (CodingStats page)
+═══════════════════════════════════════════════════════ */
+async function analyzeCodingStats({ easy, medium, hard, platform, targetRole }) {
+  const total = (easy || 0) + (medium || 0) + (hard || 0);
+  const prompt = `You are a competitive programming coach and technical interview expert.
+Analyze this candidate's LeetCode-style problem-solving statistics and target role:
+
+Easy solved: ${easy || 0}
+Medium solved: ${medium || 0}
+Hard solved: ${hard || 0}
+Total solved: ${total}
+Platform: ${platform || "LeetCode"}
+Target Role: ${targetRole || "Software Engineer"}
+
+Return ONLY valid JSON:
+{
+  "overallScore": <integer 0-100>,
+  "level": "Beginner|Intermediate|Advanced|Expert",
+  "estimatedReadiness": <integer 0-100 representing interview readiness %>,
+  "strengths": ["strength1", "strength2", "strength3"],
+  "weaknesses": ["weakness1", "weakness2"],
+  "nextSteps": [
+    "concrete action step 1",
+    "concrete action step 2",
+    "concrete action step 3",
+    "concrete action step 4"
+  ],
+  "topicsToStudy": [
+    {"topic": "Arrays & Hashing", "priority": "High|Medium|Low"},
+    {"topic": "Dynamic Programming", "priority": "High|Medium|Low"},
+    {"topic": "Graphs & BFS/DFS", "priority": "High|Medium|Low"},
+    {"topic": "Trees & Recursion", "priority": "High|Medium|Low"},
+    {"topic": "Sliding Window", "priority": "High|Medium|Low"}
+  ],
+  "problemDistributionFeedback": "1-2 sentences about the easy/medium/hard balance",
+  "feedback": "2-3 personalized sentences summarizing overall coding progress and interview readiness for ${targetRole || "Software Engineer"}"
+}`;
+  const r = await groq.chat.completions.create({
+    model: "llama-3.3-70b-versatile",
+    messages: [{ role: "system", content: "Return only valid JSON." }, { role: "user", content: prompt }],
+    temperature: 0.4,
+  });
+  return safeJSON(r.choices[0].message.content);
+}
+
 module.exports = {
   generateDomainInsights,
   analyzeResumeWithAI,
@@ -281,4 +327,5 @@ module.exports = {
   generateCareerIntel,
   compareCareerPaths,
   whatIfSimulator,
+  analyzeCodingStats,
 };

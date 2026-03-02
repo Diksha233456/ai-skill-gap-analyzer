@@ -43,6 +43,10 @@ app.use("/api/auth", authRoutes);
 const aiRoutes = require("./routes/aiRoutes");
 app.use("/api/ai", aiRoutes);
 
+// 📊 Coding Stats Routes
+const codingStatsRoutes = require("./routes/codingStatsRoutes");
+app.use("/api/coding-stats", codingStatsRoutes);
+
 
 /* ===============================
    🔹 404 HANDLER

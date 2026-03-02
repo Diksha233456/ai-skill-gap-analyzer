@@ -271,7 +271,7 @@ export default function Analysis() {
               Career Intelligence <span style={{ color: "#fb7185" }}>Command Center</span>
             </h1>
             <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)" }}>
-              {data ? `Analysis for ${data.name || "User"} · ${data.targetRole}` : "AI-powered career insights"}
+              {data ? `Analysis for ${authUser?.name || "User"} · ${data.targetRole}` : "AI-powered career insights"}
             </p>
           </div>
         </div>
