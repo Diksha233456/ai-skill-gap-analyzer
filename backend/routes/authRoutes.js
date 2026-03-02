@@ -25,7 +25,7 @@ router.post("/register", async (req, res) => {
             existing.password = password; // will be hashed by pre-save hook
             await existing.save();
             const token = sign(existing);
-            return res.status(200).json({ success: true, token, user: { id: existing._id, name: existing.name, email: existing.email, settings: existing.settings } });
+            return res.status(200).json({ success: true, token, user: { id: existing._id, name: existing.name, email: existing.email, settings: existing.settings, codingStats: existing.codingStats } });
         }
 
         if (existing)
@@ -33,7 +33,7 @@ router.post("/register", async (req, res) => {
 
         const user = await User.create({ name, email, password, targetRole: "" });
         const token = sign(user);
-        res.status(201).json({ success: true, token, user: { id: user._id, name: user.name, email: user.email, settings: user.settings } });
+        res.status(201).json({ success: true, token, user: { id: user._id, name: user.name, email: user.email, settings: user.settings, codingStats: user.codingStats } });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
@@ -59,7 +59,7 @@ router.post("/login", async (req, res) => {
             return res.status(401).json({ success: false, message: "Incorrect password." });
 
         const token = sign(user);
-        res.json({ success: true, token, user: { id: user._id, name: user.name, email: user.email, settings: user.settings } });
+        res.json({ success: true, token, user: { id: user._id, name: user.name, email: user.email, settings: user.settings, codingStats: user.codingStats } });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
@@ -110,7 +110,45 @@ router.put("/profile", async (req, res) => {
         await user.save();
         // Update token with new name
         const token = jwt.sign({ id: user._id, email: user.email, name: user.name }, process.env.JWT_SECRET, { expiresIn: "7d" });
-        res.json({ success: true, token, user: { id: user._id, name: user.name, email: user.email, targetRole: user.targetRole, skills: user.skills, readinessScore: user.readinessScore, settings: user.settings } });
+        res.json({ success: true, token, user: { id: user._id, name: user.name, email: user.email, targetRole: user.targetRole, skills: user.skills, readinessScore: user.readinessScore, settings: user.settings, codingStats: user.codingStats } });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+/* ─── UPDATE CODING STATS ─── */
+router.put("/coding-stats", async (req, res) => {
+    try {
+        const auth = req.headers.authorization;
+        if (!auth) return res.status(401).json({ success: false, message: "No token." });
+        const decoded = jwt.verify(auth.replace("Bearer ", ""), process.env.JWT_SECRET);
+        const user = await User.findById(decoded.id);
+        if (!user) return res.status(404).json({ success: false, message: "User not found." });
+
+        const { easy, medium, hard } = req.body;
+        const nEasy = Number(easy) || 0;
+        const nMedium = Number(medium) || 0;
+        const nHard = Number(hard) || 0;
+        const total = nEasy + nMedium + nHard;
+
+        user.codingStats = {
+            easy: nEasy,
+            medium: nMedium,
+            hard: nHard,
+            lastUpdated: new Date()
+        };
+
+        // Add to history
+        user.codingHistory.push({
+            date: new Date(),
+            easy: nEasy,
+            medium: nMedium,
+            hard: nHard,
+            total
+        });
+
+        await user.save();
+        res.json({ success: true, user });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }

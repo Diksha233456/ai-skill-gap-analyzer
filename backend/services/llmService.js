@@ -270,6 +270,53 @@ Predict what changes for their career. Return ONLY valid JSON:
   return safeJSON(r.choices[0].message.content);
 }
 
+/* ═══════════════════════════════════════════════════════
+   11. CODING ORACLE  (new — Coding Stats)
+═══════════════════════════════════════════════════════ */
+async function analyzeCodingStats(codingStats, resumeSkills, targetRole) {
+  const prompt = `You are a strict FAANG technical interviewer and career coach. Analyze this candidate's algorithmic readiness.
+TARGET ROLE: ${targetRole || "Software Engineer"}
+CANDIDATE'S CURRENT SKILLS: ${resumeSkills.length > 0 ? resumeSkills.join(", ") : "None specified"}
+LEETCODE STATS: Easy: ${codingStats.easy || 0}, Medium: ${codingStats.medium || 0}, Hard: ${codingStats.hard || 0}
+
+Analyze these numbers. Produce a JSON payload giving them an honest readiness verdict and a specific study plan.
+IMPORTANT: If their stats are all 0 or very low (e.g. 0 Easy, 0 Medium, 0 Hard), DO NOT say they "failed". Treat them as a beginner starting their journey. Set their beltRank to "White Belt", interviewVerdict to "Not Started", and provide an encouraging "Getting Started" study pattern.
+Return ONLY valid JSON:
+{
+  "readinessScore": <0-100 score on their FAANG readiness>,
+  "beltRank": "White Belt|Blue Belt|Purple Belt|Brown Belt|Black Belt|FAANG Master",
+  "interviewVerdict": "Passed|Marginal|Failed|Not Started",
+  "topicMastery": [
+    { "topic": "Arrays & Strings", "score": <0-100> },
+    { "topic": "Trees & Graphs", "score": <0-100> },
+    { "topic": "Dynamic Programming", "score": <0-100> },
+    { "topic": "Recursion & Backtracking", "score": <0-100> },
+    { "topic": "Linked Lists & Stacks", "score": <0-100> },
+    { "topic": "System Design & Scalability", "score": <0-100> }
+  ],
+  "estimatedSalaryImpact": "+X% based on skill matching",
+  "matchSummary": "A professional 1-sentence summary of how well they match the target role.",
+  "verdict": "2-3 short sentences. If they have 0 stats, welcome them and encourage them to start with Easy arrays. Otherwise, be brutally honest.",
+  "strengths": ["e.g. Good foundational volume with Easy questions, OR Clean slate ready to learn"],
+  "weaknesses": ["e.g. Not enough Mediums to pass standard phone screens, OR Has not started practicing algorithms"],
+  "recommendedPatterns": [
+    {
+      "pattern": "e.g. Sliding Window",
+      "reason": "Why they need this based on their target role and current stats",
+      "difficulty": "Easy|Medium|Hard"
+    },
+    { "pattern": "", "reason": "", "difficulty": "" },
+    { "pattern": "", "reason": "", "difficulty": "" }
+  ]
+}`;
+  const r = await groq.chat.completions.create({
+    model: "llama-3.3-70b-versatile",
+    messages: [{ role: "system", content: "Return only valid JSON." }, { role: "user", content: prompt }],
+    temperature: 0.4,
+  });
+  return safeJSON(r.choices[0].message.content);
+}
+
 module.exports = {
   generateDomainInsights,
   analyzeResumeWithAI,
@@ -281,4 +328,5 @@ module.exports = {
   generateCareerIntel,
   compareCareerPaths,
   whatIfSimulator,
+  analyzeCodingStats,
 };
