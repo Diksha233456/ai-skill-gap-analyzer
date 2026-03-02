@@ -35,6 +35,10 @@ app.use("/api/dashboard", dashboardRoutes);
 const domainRoutes = require("./routes/domainRoutes");
 app.use("/api/domains", domainRoutes);
 
+// 🔐 Auth Routes (Register / Login / Me)
+const authRoutes = require("./routes/authRoutes");
+app.use("/api/auth", authRoutes);
+
 // 🔥 AI Routes (Groq Integration)
 const aiRoutes = require("./routes/aiRoutes");
 app.use("/api/ai", aiRoutes);
