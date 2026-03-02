@@ -104,6 +104,7 @@ export default function Settings() {
 
       {/* Background */}
       <div style={styles.background} />
+      <div style={styles.backgroundOverlay} />
 
       <div style={styles.innerContainer}>
         {/* Sidebar */}
@@ -301,7 +302,15 @@ const styles = {
   background: {
     position: "fixed",
     inset: 0,
-    background: "linear-gradient(135deg, #0d0821 0%, #1a0f2e 50%, #0d1b2a 100%)",
+    backgroundImage: "url('/settings-bg.png')",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    zIndex: -1,
+  },
+  backgroundOverlay: {
+    position: "fixed",
+    inset: 0,
+    background: "rgba(5,2,20,0.78)",
     zIndex: -1,
   },
 

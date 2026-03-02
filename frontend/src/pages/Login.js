@@ -69,7 +69,9 @@ export default function Login() {
     };
 
     return (
-        <div style={{ minHeight: "100vh", background: "#0d0821", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Inter',-apple-system,sans-serif", position: "relative", overflow: "hidden" }}>
+        <div style={{ minHeight: "100vh", backgroundImage: "url('/ai-bg.png')", backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Inter',-apple-system,sans-serif", position: "relative", overflow: "hidden" }}>
+            {/* Dark overlay on image */}
+            <div style={{ position: "fixed", inset: 0, background: "rgba(5,2,20,0.75)", zIndex: 0, pointerEvents: "none" }} />
             <style>{CSS}</style>
 
             {[

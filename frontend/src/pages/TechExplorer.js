@@ -780,13 +780,15 @@ export default function TechExplorer() {
 
   return (
     <div style={{
-      minHeight: "100vh", background: "var(--bg-dark,#0d0821)", color: "#f1f5f9",
+      minHeight: "100vh", backgroundImage: "url('/techexplorer-bg.png')",
+      backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed",
+      color: "#f1f5f9",
       fontFamily: "'Inter',-apple-system,BlinkMacSystemFont,sans-serif", position: "relative", overflowX: "hidden"
     }}>
       <style>{GLOBAL_CSS}</style>
 
       {/* Background Orbs */}
-      <div style={{ position: "fixed", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px)", backgroundSize: "50px 50px", zIndex: 0, pointerEvents: "none" }} />
+      <div style={{ position: "fixed", inset: 0, background: "rgba(5,2,20,0.76)", backgroundImage: "linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px)", backgroundSize: "50px 50px", zIndex: 0, pointerEvents: "none" }} />
       {[
         { top: "-20%", left: "-8%", bg: "rgba(139,0,255,0.4)", size: "700px" },
         { top: "-5%", right: "-12%", bg: "rgba(0,180,255,0.25)", size: "600px" },

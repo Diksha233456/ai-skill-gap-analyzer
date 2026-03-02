@@ -210,7 +210,10 @@ function CodingStats() {
 const styles = {
   page: {
     minHeight: "100vh",
-    background: "var(--bg-dark)",
+    backgroundImage: "url('/coding-bg.png')",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundAttachment: "fixed",
     color: "var(--text-primary)",
     fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
     display: "flex",
@@ -222,9 +225,10 @@ const styles = {
   gridOverlay: {
     position: "fixed",
     top: 0, left: 0, right: 0, bottom: 0,
+    background: "rgba(5,2,20,0.78)",
     backgroundImage: `
-      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)
     `,
     backgroundSize: "50px 50px",
     zIndex: 0,
