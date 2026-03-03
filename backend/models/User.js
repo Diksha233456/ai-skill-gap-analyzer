@@ -10,6 +10,15 @@ const userSchema = new mongoose.Schema(
     skills: { type: [String], default: [] },
     readinessScore: { type: Number, default: 0 },
     lastAnalysis: { type: mongoose.Schema.Types.Mixed, default: null },
+    codingStats: {
+      easy: { type: Number, default: 0 },
+      medium: { type: Number, default: 0 },
+      hard: { type: Number, default: 0 },
+      platform: { type: String, default: "LeetCode" },
+      targetRole: { type: String, default: "" },
+      lastAnalysis: { type: mongoose.Schema.Types.Mixed, default: null },
+      updatedAt: { type: Date, default: null },
+    },
     settings: {
       notifications: { type: Boolean, default: true },
       autoSave: { type: Boolean, default: true },

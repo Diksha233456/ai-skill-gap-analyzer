@@ -271,43 +271,42 @@ Predict what changes for their career. Return ONLY valid JSON:
 }
 
 /* ═══════════════════════════════════════════════════════
-   11. CODING ORACLE  (new — Coding Stats)
+   11. CODING STATS ANALYSIS  (CodingStats page)
 ═══════════════════════════════════════════════════════ */
-async function analyzeCodingStats(codingStats, resumeSkills, targetRole) {
-  const prompt = `You are a strict FAANG technical interviewer and career coach. Analyze this candidate's algorithmic readiness.
-TARGET ROLE: ${targetRole || "Software Engineer"}
-CANDIDATE'S CURRENT SKILLS: ${resumeSkills.length > 0 ? resumeSkills.join(", ") : "None specified"}
-LEETCODE STATS: Easy: ${codingStats.easy || 0}, Medium: ${codingStats.medium || 0}, Hard: ${codingStats.hard || 0}
+async function analyzeCodingStats({ easy, medium, hard, platform, targetRole }) {
+  const total = (easy || 0) + (medium || 0) + (hard || 0);
+  const prompt = `You are a competitive programming coach and technical interview expert.
+Analyze this candidate's LeetCode-style problem-solving statistics and target role:
 
-Analyze these numbers. Produce a JSON payload giving them an honest readiness verdict and a specific study plan.
-IMPORTANT: If their stats are all 0 or very low (e.g. 0 Easy, 0 Medium, 0 Hard), DO NOT say they "failed". Treat them as a beginner starting their journey. Set their beltRank to "White Belt", interviewVerdict to "Not Started", and provide an encouraging "Getting Started" study pattern.
+Easy solved: ${easy || 0}
+Medium solved: ${medium || 0}
+Hard solved: ${hard || 0}
+Total solved: ${total}
+Platform: ${platform || "LeetCode"}
+Target Role: ${targetRole || "Software Engineer"}
+
 Return ONLY valid JSON:
 {
-  "readinessScore": <0-100 score on their FAANG readiness>,
-  "beltRank": "White Belt|Blue Belt|Purple Belt|Brown Belt|Black Belt|FAANG Master",
-  "interviewVerdict": "Passed|Marginal|Failed|Not Started",
-  "topicMastery": [
-    { "topic": "Arrays & Strings", "score": <0-100> },
-    { "topic": "Trees & Graphs", "score": <0-100> },
-    { "topic": "Dynamic Programming", "score": <0-100> },
-    { "topic": "Recursion & Backtracking", "score": <0-100> },
-    { "topic": "Linked Lists & Stacks", "score": <0-100> },
-    { "topic": "System Design & Scalability", "score": <0-100> }
+  "overallScore": <integer 0-100>,
+  "level": "Beginner|Intermediate|Advanced|Expert",
+  "estimatedReadiness": <integer 0-100 representing interview readiness %>,
+  "strengths": ["strength1", "strength2", "strength3"],
+  "weaknesses": ["weakness1", "weakness2"],
+  "nextSteps": [
+    "concrete action step 1",
+    "concrete action step 2",
+    "concrete action step 3",
+    "concrete action step 4"
   ],
-  "estimatedSalaryImpact": "+X% based on skill matching",
-  "matchSummary": "A professional 1-sentence summary of how well they match the target role.",
-  "verdict": "2-3 short sentences. If they have 0 stats, welcome them and encourage them to start with Easy arrays. Otherwise, be brutally honest.",
-  "strengths": ["e.g. Good foundational volume with Easy questions, OR Clean slate ready to learn"],
-  "weaknesses": ["e.g. Not enough Mediums to pass standard phone screens, OR Has not started practicing algorithms"],
-  "recommendedPatterns": [
-    {
-      "pattern": "e.g. Sliding Window",
-      "reason": "Why they need this based on their target role and current stats",
-      "difficulty": "Easy|Medium|Hard"
-    },
-    { "pattern": "", "reason": "", "difficulty": "" },
-    { "pattern": "", "reason": "", "difficulty": "" }
-  ]
+  "topicsToStudy": [
+    {"topic": "Arrays & Hashing", "priority": "High|Medium|Low"},
+    {"topic": "Dynamic Programming", "priority": "High|Medium|Low"},
+    {"topic": "Graphs & BFS/DFS", "priority": "High|Medium|Low"},
+    {"topic": "Trees & Recursion", "priority": "High|Medium|Low"},
+    {"topic": "Sliding Window", "priority": "High|Medium|Low"}
+  ],
+  "problemDistributionFeedback": "1-2 sentences about the easy/medium/hard balance",
+  "feedback": "2-3 personalized sentences summarizing overall coding progress and interview readiness for ${targetRole || "Software Engineer"}"
 }`;
   const r = await groq.chat.completions.create({
     model: "llama-3.3-70b-versatile",
