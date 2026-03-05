@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuthUser, getInitials, logout } from "../services/auth";
+import API_BASE from "../config";
 
 // ─── Radar Chart (SVG) ───────────────────────────────────────────────────────
 function RadarChart({ data, size = 280 }) {
