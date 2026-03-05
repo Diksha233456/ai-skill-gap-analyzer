@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Bell, Lock, Eye, LogOut } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import { logout } from "../services/auth";
-
-const API = "http://localhost:5000";
+import { API_URL } from "../config";
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -27,10 +26,12 @@ export default function Settings() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(`${API}/api/auth/profile`, {
+        const res = await fetch(`${API_URL}/api/auth/profile`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        const data = await res.json();
+        const text = await res.text();
+        let data;
+        try { data = JSON.parse(text); } catch (e) { throw new Error("spinning_up"); }
         if (data.success && data.user && data.user.settings) {
           setSettings({
             notifications: data.user.settings.notifications ?? true,
@@ -56,11 +57,13 @@ export default function Settings() {
     setSaving(true);
     setMessage("");
     try {
-      const res = await fetch(`${API}/api/auth/profile`, {
+      const res = await fetch(`${API_URL}/api/auth/profile`, {
         method: "PUT", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ settings }),
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data;
+      try { data = JSON.parse(text); } catch (e) { throw new Error("spinning_up"); }
       if (data.success) {
         setMessage("Settings saved successfully! ✅");
         setTimeout(() => setMessage(""), 3000);
@@ -68,7 +71,7 @@ export default function Settings() {
         setMessage("Failed to save settings: " + data.message);
       }
     } catch (error) {
-      setMessage("Server error. Try again.");
+      setMessage(error.message === "spinning_up" ? "Backend is spinning up. Please wait ~50s." : "Server error. Try again.");
     } finally {
       setSaving(false);
     }
@@ -104,7 +107,6 @@ export default function Settings() {
 
       {/* Background */}
       <div style={styles.background} />
-      <div style={styles.backgroundOverlay} />
 
       <div style={styles.innerContainer}>
         {/* Sidebar */}
@@ -156,13 +158,13 @@ export default function Settings() {
                         Receive updates about your skill gaps and career progress
                       </div>
                     </div>
-                    <label className="toggle" style={styles.toggle}>
+                    <label style={styles.toggle}>
                       <input
                         type="checkbox"
                         checked={settings.notifications}
                         onChange={() => handleToggle('notifications')}
                       />
-                      <span className="slider" style={styles.slider}></span>
+                      <span style={styles.slider}></span>
                     </label>
                   </div>
 
@@ -175,13 +177,13 @@ export default function Settings() {
                         Automatically save your resume when you make changes
                       </div>
                     </div>
-                    <label className="toggle" style={styles.toggle}>
+                    <label style={styles.toggle}>
                       <input
                         type="checkbox"
                         checked={settings.autoSave}
                         onChange={() => handleToggle('autoSave')}
                       />
-                      <span className="slider" style={styles.slider}></span>
+                      <span style={styles.slider}></span>
                     </label>
                   </div>
                 </div>
@@ -197,13 +199,13 @@ export default function Settings() {
                         Hide your profile from other users
                       </div>
                     </div>
-                    <label className="toggle" style={styles.toggle}>
+                    <label style={styles.toggle}>
                       <input
                         type="checkbox"
                         checked={settings.privateProfile}
                         onChange={() => handleToggle('privateProfile')}
                       />
-                      <span className="slider" style={styles.slider}></span>
+                      <span style={styles.slider}></span>
                     </label>
                   </div>
 
@@ -216,30 +218,25 @@ export default function Settings() {
                         Allow your resume to be visible in search results
                       </div>
                     </div>
-                    <label className="toggle" style={styles.toggle}>
+                    <label style={styles.toggle}>
                       <input
                         type="checkbox"
                         checked={settings.showInSearch}
                         onChange={() => handleToggle('showInSearch')}
                       />
-                      <span className="slider" style={styles.slider}></span>
+                      <span style={styles.slider}></span>
                     </label>
                   </div>
 
                   <div style={styles.divider} />
 
                   <div style={styles.buttonGroup}>
-                    <button style={styles.logoutButton} onClick={() => {
-                      if (window.confirm("Are you sure you want to log out?")) {
+                    <button style={styles.dangerButton} onClick={() => {
+                      if (window.confirm("Are you sure you want to log out? (Delete Account isn't implemented yet)")) {
                         logout();
                       }
                     }}>
-                      <LogOut size={16} /> Log Out
-                    </button>
-                    <button style={styles.dangerButton} onClick={() =>
-                      alert("Account deletion is not available yet. Please contact support.")
-                    }>
-                      Delete Account
+                      <LogOut size={16} /> Delete Account
                     </button>
                   </div>
                 </div>
@@ -255,9 +252,9 @@ export default function Settings() {
                         Automatically enabled. Light mode coming soon!
                       </div>
                     </div>
-                    <label className="toggle" style={styles.toggle}>
+                    <label style={styles.toggle}>
                       <input type="checkbox" checked disabled />
-                      <span className="slider" style={styles.slider}></span>
+                      <span style={styles.slider}></span>
                     </label>
                   </div>
 
@@ -270,20 +267,20 @@ export default function Settings() {
                         Enable smooth transitions and animations
                       </div>
                     </div>
-                    <label className="toggle" style={styles.toggle}>
+                    <label style={styles.toggle}>
                       <input
                         type="checkbox"
                         checked={settings.animations}
                         onChange={() => handleToggle('animations')}
                       />
-                      <span className="slider" style={styles.slider}></span>
+                      <span style={styles.slider}></span>
                     </label>
                   </div>
                 </div>
               )}
 
               <button
-                style={{ ...styles.saveButton, cursor: saving ? "not-allowed" : "pointer", opacity: saving ? 0.7 : 1 }}
+                style={{ ...styles.saveButton, opacity: saving ? 0.7 : 1, cursor: saving ? "not-allowed" : "pointer" }}
                 onClick={handleSave}
                 disabled={saving}
               >
@@ -307,15 +304,7 @@ const styles = {
   background: {
     position: "fixed",
     inset: 0,
-    backgroundImage: "url('/settings-bg.png')",
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    zIndex: -1,
-  },
-  backgroundOverlay: {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(5,2,20,0.78)",
+    background: "linear-gradient(135deg, #0d0821 0%, #1a0f2e 50%, #0d1b2a 100%)",
     zIndex: -1,
   },
 
@@ -466,32 +455,13 @@ const styles = {
     color: "#fff",
     fontSize: "14px",
     fontWeight: 700,
-    cursor: "pointer",
     transition: "all 0.3s ease",
     marginTop: "30px",
     fontFamily: "Outfit, sans-serif",
   },
 
-  logoutButton: {
-    flex: 1,
-    padding: "12px 16px",
-    background: "rgba(91,140,255,0.1)",
-    border: "1px solid rgba(91,140,255,0.3)",
-    borderRadius: "10px",
-    color: "#5b8cff",
-    fontSize: "14px",
-    fontWeight: 600,
-    cursor: "pointer",
-    transition: "all 0.2s ease",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "8px",
-    fontFamily: "Outfit, sans-serif",
-  },
-
   dangerButton: {
-    flex: 1,
+    width: "100%",
     padding: "12px 16px",
     background: "rgba(251, 113, 133, 0.1)",
     border: "1px solid rgba(251, 113, 133, 0.3)",

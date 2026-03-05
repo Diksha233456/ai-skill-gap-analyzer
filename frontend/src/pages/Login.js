@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { API_URL } from "../config";
 
 const CSS = `
 @keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
@@ -53,11 +54,19 @@ export default function Login() {
         if (!email.trim() || !password) { setError("Please fill in both fields."); return; }
         setError(""); setLoading(true);
         try {
-            const res = await fetch("http://localhost:5000/api/auth/login", {
+            const res = await fetch(`${API_URL}/api/auth/login`, {
                 method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: email.trim(), password }),
             });
-            const data = await res.json();
+            const text = await res.text();
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                setError("Backend is spinning up (free tier). Please wait ~50s and try again.");
+                setLoading(false);
+                return;
+            }
             if (!data.success) { setError(data.message || "Login failed."); setLoading(false); return; }
 
             localStorage.setItem("token", data.token);

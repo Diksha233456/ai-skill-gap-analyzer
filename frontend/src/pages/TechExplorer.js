@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { getAuthUser, getInitials, logout } from "../services/auth";
+import { API_URL } from "../config";
 
 /* ── CSS injected once ── */
 const GLOBAL_CSS = `
@@ -141,11 +142,13 @@ function RoadmapMode() {
     if (!search.trim()) return;
     setLoading(true); setInsights(null);
     try {
-      const res = await fetch("http://localhost:5000/api/ai/roadmap", {
+      const res = await fetch(`${API_URL}/api/ai/roadmap`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ domain: search, level: "Beginner", goal: "Get a job in this field", time: "10 hours per week" }),
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data;
+      try { data = JSON.parse(text); } catch (e) { throw new Error("spinning_up"); }
       if (data.success) setInsights(data.insights);
     } catch (e) { console.error(e); }
     setLoading(false);
@@ -378,14 +381,16 @@ function PathBattleMode() {
     if (!path1.trim() || !path2.trim()) { setError("Please enter both career paths"); return; }
     setError(""); setLoading(true); setResult(null);
     try {
-      const res = await fetch("http://localhost:5000/api/ai/compare-paths", {
+      const res = await fetch(`${API_URL}/api/ai/compare-paths`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ path1, path2 }),
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data;
+      try { data = JSON.parse(text); } catch (e) { throw new Error("spinning_up"); }
       if (data.success) setResult({ path1: data.path1, path2: data.path2, skillOverlap: data.skillOverlap, verdict: data.verdict });
       else setError("AI couldn't generate comparison. Try again.");
-    } catch (e) { setError("Connection error. Is the server running?"); }
+    } catch (e) { setError(e.message === "spinning_up" ? "Backend is spinning up (free tier). Please wait ~50s and try again." : "Connection error. Is the server running?"); }
     setLoading(false);
   };
 
@@ -582,14 +587,16 @@ function WhatIfMode() {
     setError(""); setLoading(true); setResult(null);
     try {
       const skills = currentSkills.split(",").map(s => s.trim()).filter(Boolean);
-      const res = await fetch("http://localhost:5000/api/ai/what-if", {
+      const res = await fetch(`${API_URL}/api/ai/what-if`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ currentSkills: skills, newSkill }),
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data;
+      try { data = JSON.parse(text); } catch (e) { throw new Error("spinning_up"); }
       if (data.success) setResult({ newSkill: data.newSkill, unlockedRoles: data.unlockedRoles, salaryImpact: data.salaryImpact, demandBoost: data.demandBoost, timeToLearn: data.timeToLearn, synergies: data.synergies, verdict: data.verdict });
       else setError("Simulation failed. Try again.");
-    } catch (e) { setError("Connection error. Is the server running?"); }
+    } catch (e) { setError(e.message === "spinning_up" ? "Backend is spinning up (free tier). Please wait ~50s and try again." : "Connection error. Is the server running?"); }
     setLoading(false);
   };
 

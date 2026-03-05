@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuthUser, getInitials, logout } from "../services/auth";
-
-const API = "http://localhost:5000";
+import { API_URL } from "../config";
 
 /* ─── Animated SVG Score Ring ─── */
 function ScoreRing({ score, size = 160, stroke = 14, color = "#5b8cff" }) {
@@ -87,8 +86,11 @@ export default function CodingStats() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) { setFetching(false); return; }
-    fetch(`${API}/api/coding-stats`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json())
+    fetch(`${API_URL}/api/coding-stats`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(async r => {
+        const text = await r.text();
+        try { return JSON.parse(text); } catch (e) { throw new Error("spinning_up"); }
+      })
       .then(data => {
         if (data.success && data.codingStats) {
           const s = data.codingStats;
@@ -123,7 +125,7 @@ export default function CodingStats() {
 
     setLoading(true);
     try {
-      const res = await fetch(`${API}/api/coding-stats/analyze`, {
+      const res = await fetch(`${API_URL}/api/coding-stats/analyze`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -134,12 +136,14 @@ export default function CodingStats() {
           targetRole: stats.targetRole || "Software Engineer",
         }),
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data;
+      try { data = JSON.parse(text); } catch (e) { throw new Error("spinning_up"); }
       if (!data.success) throw new Error(data.message || "Analysis failed");
       setAnalysis(data.analysis);
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
     } catch (err) {
-      setError(err.message);
+      setError(err.message === "spinning_up" ? "Backend is spinning up (free tier). Please wait ~50s." : err.message);
     } finally {
       setLoading(false);
     }
