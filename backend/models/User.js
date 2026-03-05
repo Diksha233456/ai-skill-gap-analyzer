@@ -32,7 +32,11 @@ const userSchema = new mongoose.Schema(
       easy: { type: Number, default: 0 },
       medium: { type: Number, default: 0 },
       hard: { type: Number, default: 0 },
-      lastUpdated: { type: Date, default: null }
+      platform: { type: String, default: "LeetCode" },
+      targetRole: { type: String, default: "" },
+      lastAnalysis: { type: mongoose.Schema.Types.Mixed, default: null },
+      updatedAt: { type: Date, default: null },
+      lastUpdated: { type: Date, default: null },
     },
     codingHistory: [
       {
