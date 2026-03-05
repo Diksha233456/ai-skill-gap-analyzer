@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { getAuthUser, getInitials, logout } from "../services/auth";
 import Sidebar from "../components/Sidebar";
+import API_BASE from "../config";
 
-const API = "http://localhost:5000";
+const API = API_BASE;
 
 const CSS = `
 @keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
