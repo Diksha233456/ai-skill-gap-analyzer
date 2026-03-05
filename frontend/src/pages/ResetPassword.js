@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { API_URL } from "../config";
 
 const CSS = `
 @keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
@@ -61,7 +62,7 @@ export default function ResetPassword() {
 
         setError(""); setLoading(true);
         try {
-            const res = await fetch("http://localhost:5000/api/auth/reset-password", {
+            const res = await fetch(`${API_URL}/api/auth/reset-password`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ token, newPassword: password }),
