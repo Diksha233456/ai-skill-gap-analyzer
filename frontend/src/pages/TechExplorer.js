@@ -142,7 +142,7 @@ function RoadmapMode() {
     if (!search.trim()) return;
     setLoading(true); setInsights(null);
     try {
-      const res = await fetch("http://localhost:5000/api/ai/roadmap", {
+      const res = await fetch(`${API_BASE}/api/ai/roadmap`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ domain: search, level: "Beginner", goal: "Get a job in this field", time: "10 hours per week" }),
       });
@@ -379,7 +379,7 @@ function PathBattleMode() {
     if (!path1.trim() || !path2.trim()) { setError("Please enter both career paths"); return; }
     setError(""); setLoading(true); setResult(null);
     try {
-      const res = await fetch("http://localhost:5000/api/ai/compare-paths", {
+      const res = await fetch(`${API_BASE}/api/ai/compare-paths`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ path1, path2 }),
       });
@@ -583,7 +583,7 @@ function WhatIfMode() {
     setError(""); setLoading(true); setResult(null);
     try {
       const skills = currentSkills.split(",").map(s => s.trim()).filter(Boolean);
-      const res = await fetch("http://localhost:5000/api/ai/what-if", {
+      const res = await fetch(`${API_BASE}/api/ai/what-if`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ currentSkills: skills, newSkill }),
       });

@@ -53,7 +53,7 @@ export default function Login() {
         if (!email.trim() || !password) { setError("Please fill in both fields."); return; }
         setError(""); setLoading(true);
         try {
-            const res = await fetch("http://localhost:5000/api/auth/login", {
+            const res = await fetch(`${API_BASE}/api/auth/login`, {
                 method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: email.trim(), password }),
             });

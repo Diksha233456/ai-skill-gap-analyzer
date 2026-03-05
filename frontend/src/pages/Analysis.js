@@ -145,7 +145,7 @@ export default function Analysis() {
     if (interviewQs || !data) return;
     setInterviewLoading(true);
     try {
-      const r = await fetch("http://localhost:5000/api/ai/interview-questions", {
+      const r = await fetch(`${API_BASE}/api/ai/interview-questions`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ missingSkills: data.missingSkills?.slice(0, 6) || [], targetRole: data.targetRole }),
       });
@@ -159,7 +159,7 @@ export default function Analysis() {
     if (sprintPlan || !data) return;
     setSprintLoading(true);
     try {
-      const r = await fetch("http://localhost:5000/api/ai/sprint-plan", {
+      const r = await fetch(`${API_BASE}/api/ai/sprint-plan`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ missingSkills: data.missingSkills?.slice(0, 8) || [], targetRole: data.targetRole }),
       });
@@ -173,7 +173,7 @@ export default function Analysis() {
     if (careerIntel || !data) return;
     setIntelLoading(true);
     try {
-      const r = await fetch("http://localhost:5000/api/ai/career-intel", {
+      const r = await fetch(`${API_BASE}/api/ai/career-intel`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ matchedSkills: data.matchedSkills || [], missingSkills: data.missingSkills || [], targetRole: data.targetRole }),
       });
