@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuthUser, getInitials, logout } from "../services/auth";
+import API_BASE from "../config";
 
 // ─── Score Ring ──────────────────────────────────────────────────────────────
 function ScoreRing({ score, size = 130, color }) {
@@ -100,7 +101,7 @@ export default function ResumeUpload() {
     fd.append("resume", file); fd.append("name", name);
     fd.append("email", email); fd.append("targetRole", targetRole);
     try {
-      const r = await fetch("http://localhost:5000/api/users/upload-pdf", { method: "POST", body: fd });
+      const r = await fetch(`${API_BASE}/api/users/upload-pdf`, { method: "POST", body: fd });
       const d = await r.json();
       if (!d.success) { setError(d.message || "Analysis failed"); setLoading(false); return; }
       sessionStorage.setItem("analysisData", JSON.stringify(d));
@@ -117,7 +118,7 @@ export default function ResumeUpload() {
     const fd = new FormData();
     fd.append("resume", jdFile); fd.append("jdText", jdText);
     try {
-      const r = await fetch("http://localhost:5000/api/ai/jd-match", { method: "POST", body: fd });
+      const r = await fetch(`${API_BASE}/api/ai/jd-match`, { method: "POST", body: fd });
       const d = await r.json();
       if (!d.success) { setJdError(d.message || "JD match failed"); } else { setJdResults(d); }
     } catch { setJdError("Cannot reach server."); }
@@ -131,7 +132,7 @@ export default function ResumeUpload() {
     setGhostLoading(true); setGhostSkills(null);
     const fd = new FormData(); fd.append("resume", f);
     try {
-      const r = await fetch("http://localhost:5000/api/ai/ghost-skills", { method: "POST", body: fd });
+      const r = await fetch(`${API_BASE}/api/ai/ghost-skills`, { method: "POST", body: fd });
       const d = await r.json();
       if (d.success) setGhostSkills(d.ghostSkills || []);
     } catch { }
@@ -144,7 +145,7 @@ export default function ResumeUpload() {
     if (!lines.length) return;
     setRewriteLoading(true); setRewrites(null);
     try {
-      const r = await fetch("http://localhost:5000/api/ai/rewrite-bullets", {
+      const r = await fetch(`${API_BASE}/api/ai/rewrite-bullets`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ bullets: lines, targetRole: targetRole || "Software Engineer" }),
       });
