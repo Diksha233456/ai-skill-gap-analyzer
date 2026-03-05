@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { getAuthUser, getInitials, logout } from "../services/auth";
+import API_BASE from "../config";
 
 /* ── CSS injected once ── */
 const GLOBAL_CSS = `
