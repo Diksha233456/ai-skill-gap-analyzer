@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
 const User = require("../models/User");
 
 const sign = (user) =>
@@ -111,6 +113,58 @@ router.put("/profile", async (req, res) => {
         // Update token with new name
         const token = jwt.sign({ id: user._id, email: user.email, name: user.name }, process.env.JWT_SECRET, { expiresIn: "7d" });
         res.json({ success: true, token, user: { id: user._id, name: user.name, email: user.email, targetRole: user.targetRole, skills: user.skills, readinessScore: user.readinessScore, settings: user.settings } });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+/* ─── FORGOT PASSWORD ─── */
+router.post("/forgot-password", async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ success: false, message: "Email is required." });
+
+        const user = await User.findOne({ email: email.trim().toLowerCase() }).select("+resetToken +resetTokenExpiry");
+        // Always respond with success to prevent email enumeration
+        if (!user) return res.json({ success: true, message: "If this email is registered, a reset link has been sent." });
+
+        // Generate a secure random token
+        const rawToken = crypto.randomBytes(32).toString("hex");
+        user.resetToken = crypto.createHash("sha256").update(rawToken).digest("hex");
+        user.resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+        await user.save();
+
+        // Return reset link directly (dev/demo mode — no email needed)
+        const resetUrl = `${process.env.CLIENT_URL || "http://localhost:3000"}/reset-password?token=${rawToken}`;
+
+        res.json({ success: true, message: "Reset link generated!", resetUrl });
+    } catch (err) {
+        console.error("Forgot password error:", err.message);
+        res.status(500).json({ success: false, message: "Failed to send reset email. Please try again." });
+    }
+});
+
+/* ─── RESET PASSWORD ─── */
+router.post("/reset-password", async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+        if (!token || !newPassword) return res.status(400).json({ success: false, message: "Token and new password are required." });
+        if (newPassword.length < 6) return res.status(400).json({ success: false, message: "Password must be at least 6 characters." });
+
+        const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+        const user = await User.findOne({
+            resetToken: hashedToken,
+            resetTokenExpiry: { $gt: new Date() },
+        }).select("+password +resetToken +resetTokenExpiry");
+
+        if (!user) return res.status(400).json({ success: false, message: "Reset link is invalid or has expired." });
+
+        user.password = newPassword; // hashed by pre-save hook
+        user.resetToken = undefined;
+        user.resetTokenExpiry = undefined;
+        await user.save();
+
+        res.json({ success: true, message: "Password reset successfully! You can now log in." });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }

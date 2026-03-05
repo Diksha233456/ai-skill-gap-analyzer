@@ -6,6 +6,8 @@ const userSchema = new mongoose.Schema(
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true, select: false },
+    resetToken: { type: String, select: false },
+    resetTokenExpiry: { type: Date, select: false },
     targetRole: { type: String, default: "" },
     skills: { type: [String], default: [] },
     readinessScore: { type: Number, default: 0 },

@@ -96,6 +96,14 @@ export default function Login() {
                         type={showPwd ? "text" : "password"} placeholder="Your password"
                         action={{ fn: () => setShowPwd(p => !p), icon: showPwd ? "🙈" : "👁" }} />
 
+                    <div style={{ textAlign: "right", marginTop: "-10px", marginBottom: "18px" }}>
+                        <Link to="/forgot-password" style={{ fontSize: "12px", color: "#5b8cff", textDecoration: "none", fontWeight: 600 }}
+                            onMouseOver={e => e.target.style.textDecoration = "underline"}
+                            onMouseOut={e => e.target.style.textDecoration = "none"}>
+                            Forgot password?
+                        </Link>
+                    </div>
+
                     {error && (
                         <div style={{ padding: "10px 14px", background: "rgba(251,113,133,0.1)", border: "1px solid rgba(251,113,133,0.3)", borderRadius: "10px", color: "#fb7185", fontSize: "13px", marginBottom: "16px" }}>
                             ⚠ {error}
