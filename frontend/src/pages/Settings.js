@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { Bell, Lock, Eye, LogOut } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import { logout } from "../services/auth";
+import API_BASE from "../config";
 
-const API = "http://localhost:5000";
+const API = API_BASE;
 
 export default function Settings() {
   const navigate = useNavigate();
