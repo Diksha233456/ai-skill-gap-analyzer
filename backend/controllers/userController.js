@@ -4,25 +4,12 @@ const roleSkills = require("../services/roleSkills");
 const generateFeedback = require("../services/feedbackEngine");
 const pdfParse = require("pdf-parse");
 
+/* ─── DO NOT CREATE USER HERE (signup already handles it) ─── */
 exports.createUser = async (req, res) => {
-  try {
-    const { name, email, targetRole } = req.body;
-
-    // If user already exists, return them (allow re-use)
-    const existing = await User.findOne({ email });
-    if (existing) {
-      return res.status(200).json({
-        success: true,
-        data: existing,
-        message: "User already exists — continuing with existing profile"
-      });
-    }
-
-    const user = await User.create({ name, email, targetRole });
-    res.status(201).json({ success: true, data: user });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
+  return res.status(400).json({
+    success: false,
+    message: "Please register using signup."
+  });
 };
 
 exports.getUsers = async (req, res) => {
@@ -38,21 +25,32 @@ exports.getUsers = async (req, res) => {
 exports.uploadResume = async (req, res) => {
   try {
     const { email, resumeText } = req.body;
+
     let user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ success: false, message: "User not found." });
+    if (!user)
+      return res.status(404).json({
+        success: false,
+        message: "User not found. Please login first."
+      });
 
     const skills = extractSkills(resumeText);
     const requiredSkills = roleSkills[user.targetRole] || [];
     const matchedSkills = skills.filter(s => requiredSkills.includes(s));
     const missingSkills = requiredSkills.filter(s => !skills.includes(s));
-    const readiness = requiredSkills.length > 0
-      ? Math.round((matchedSkills.length / requiredSkills.length) * 100) : 0;
+    const readiness =
+      requiredSkills.length > 0
+        ? Math.round((matchedSkills.length / requiredSkills.length) * 100)
+        : 0;
 
     user.skills = skills;
     user.readinessScore = readiness;
     await user.save();
 
-    const feedback = generateFeedback({ readinessScore: readiness, missingSkills, targetRole: user.targetRole });
+    const feedback = generateFeedback({
+      readinessScore: readiness,
+      missingSkills,
+      targetRole: user.targetRole
+    });
 
     res.status(200).json({
       success: true,
@@ -77,23 +75,31 @@ exports.uploadPDF = async (req, res) => {
     const { email, name, targetRole } = req.body || {};
 
     if (!req.file) {
-      return res.status(400).json({ success: false, message: "No PDF file uploaded." });
-    }
-    if (!email) {
-      return res.status(400).json({ success: false, message: "Email is required." });
+      return res.status(400).json({
+        success: false,
+        message: "No PDF file uploaded."
+      });
     }
 
-    // Upsert — ALWAYS update targetRole to the one they just selected (fixes the SDE bug)
-    let user = await User.findOne({ email });
-    if (!user) {
-      if (!name || !targetRole) {
-        return res.status(400).json({ success: false, message: "Name and target role required for new users." });
-      }
-      user = await User.create({ name, email, targetRole });
-    } else {
-      if (targetRole) user.targetRole = targetRole; // KEY FIX
-      if (name) user.name = name;
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is required."
+      });
     }
+
+    /* ✅ IMPORTANT FIX — DO NOT CREATE USER */
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found. Please login first."
+      });
+    }
+
+    if (targetRole) user.targetRole = targetRole;
+    if (name) user.name = name;
 
     // Extract text from PDF buffer
     const pdfData = await pdfParse(req.file.buffer);
@@ -102,7 +108,8 @@ exports.uploadPDF = async (req, res) => {
     if (!resumeText || resumeText.trim().length < 20) {
       return res.status(400).json({
         success: false,
-        message: "Could not extract text from this PDF. It may be image-based (scanned)."
+        message:
+          "Could not extract text from this PDF. It may be image-based (scanned)."
       });
     }
 
@@ -110,7 +117,7 @@ exports.uploadPDF = async (req, res) => {
     const { analyzeResumeWithAI } = require("../services/llmService");
     const ai = await analyzeResumeWithAI(resumeText, user.targetRole);
 
-    // Save to user
+    // Save results
     user.skills = ai.allExtractedSkills || ai.matchedSkills || [];
     user.readinessScore = ai.readinessScore || 0;
     await user.save();
@@ -130,9 +137,9 @@ exports.uploadPDF = async (req, res) => {
       feedback: ai.feedback || "",
       hirability: ai.hirability || "Needs Improvement",
       topSkillToLearn: ai.topSkillToLearn || "",
-      totalRequired: (ai.matchedSkills || []).length + (ai.missingSkills || []).length,
+      totalRequired:
+        (ai.matchedSkills || []).length + (ai.missingSkills || []).length
     });
-
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

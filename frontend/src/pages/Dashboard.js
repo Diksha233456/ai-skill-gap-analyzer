@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { FileText, Code, LineChart, Compass, User, Settings, LogOut, ArrowRight } from "lucide-react";
+import { FileText, Code, LineChart, Compass, User, Settings, LogOut } from "lucide-react";
 import { getAuthUser, getInitials, logout } from "../services/auth";
 
 function Dashboard() {
@@ -111,8 +111,8 @@ function Dashboard() {
           <div style={S.heroBadge}>
             <span style={{ fontSize: "16px" }}>⚡</span> Empowering Careers
           </div>
-          <h1 style={{ fontSize: "72px", fontWeight: 800, lineHeight: 1.1, margin: "0 0 24px", letterSpacing: "-2px" }} className="outfit hero-title">
-            {authUser ? `Hey, ${authUser.name.split(" ")[0]} 👋` : "Analyze Your"} <br />
+          <h1 style={{ fontSize: "72px", fontWeight: 800, lineHeight: 1.1, margin: "0 0 24px", letterSpacing: "-2px" }} className="outfit">
+            <span className="hero-title">{authUser ? `Hey, ${authUser.name.split(" ")[0]}` : "Analyze Your"}</span>{authUser ? " 👋" : ""} <br />
             <span className="hero-glow">Career Readiness</span>
           </h1>
           <p style={{ fontSize: "20px", color: "var(--text-secondary)", margin: "0", lineHeight: 1.6, fontWeight: 400 }}>

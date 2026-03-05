@@ -71,7 +71,7 @@ npm start
 ```
 
 Runs on:  
-👉 http://localhost:3000
+👉 https://ai-skill-gap-analyzer-1-2p7n.onrender.com
 
 ---
 

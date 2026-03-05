@@ -27,7 +27,22 @@ const userSchema = new mongoose.Schema(
       privateProfile: { type: Boolean, default: false },
       showInSearch: { type: Boolean, default: true },
       animations: { type: Boolean, default: true },
-    }
+    },
+    codingStats: {
+      easy: { type: Number, default: 0 },
+      medium: { type: Number, default: 0 },
+      hard: { type: Number, default: 0 },
+      lastUpdated: { type: Date, default: null }
+    },
+    codingHistory: [
+      {
+        date: { type: Date, default: Date.now },
+        easy: Number,
+        medium: Number,
+        hard: Number,
+        total: Number
+      }
+    ]
   },
   { timestamps: true }
 );

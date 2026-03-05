@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { getAuthUser, getInitials, logout } from "../services/auth";
 import Sidebar from "../components/Sidebar";
-
-const API = "http://localhost:5000";
+import { API_URL } from "../config";
 
 const CSS = `
 @keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
@@ -55,8 +54,10 @@ export default function Profile() {
     useEffect(() => {
         (async () => {
             try {
-                const res = await fetch(`${API}/api/auth/profile`, { headers: { Authorization: `Bearer ${token}` } });
-                const data = await res.json();
+                const res = await fetch(`${API_URL}/api/auth/profile`, { headers: { Authorization: `Bearer ${token}` } });
+                const text = await res.text();
+                let data;
+                try { data = JSON.parse(text); } catch (e) { throw new Error("spinning_up"); }
                 if (data.success) {
                     setUser(data.user);
                     setEditName(data.user.name || "");
@@ -77,18 +78,20 @@ export default function Profile() {
         if (!editName.trim()) { showMsg("Name cannot be empty.", "error"); return; }
         setSaving(true);
         try {
-            const res = await fetch(`${API}/api/auth/profile`, {
+            const res = await fetch(`${API_URL}/api/auth/profile`, {
                 method: "PUT", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
                 body: JSON.stringify({ name: editName, targetRole: editRole }),
             });
-            const data = await res.json();
+            const text = await res.text();
+            let data;
+            try { data = JSON.parse(text); } catch (e) { throw new Error("spinning_up"); }
             if (data.success) {
                 localStorage.setItem("authUser", JSON.stringify(data.user));
                 if (data.token) localStorage.setItem("token", data.token);
                 setUser(prev => ({ ...prev, name: data.user.name, targetRole: data.user.targetRole }));
                 showMsg("Profile updated successfully! ✅");
             } else showMsg(data.message, "error");
-        } catch { showMsg("Server error. Try again.", "error"); }
+        } catch (e) { showMsg(e.message === "spinning_up" ? "Backend is spinning up." : "Server error. Try again.", "error"); }
         setSaving(false);
     };
 
@@ -98,24 +101,26 @@ export default function Profile() {
         if (newPwd !== confPwd) { showMsg("Passwords do not match.", "error"); return; }
         setPwdSaving(true);
         try {
-            const res = await fetch(`${API}/api/auth/profile`, {
+            const res = await fetch(`${API_URL}/api/auth/profile`, {
                 method: "PUT", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
                 body: JSON.stringify({ currentPassword: curPwd, newPassword: newPwd }),
             });
-            const data = await res.json();
+            const text = await res.text();
+            let data;
+            try { data = JSON.parse(text); } catch (e) { throw new Error("spinning_up"); }
             if (data.success) {
                 if (data.token) localStorage.setItem("token", data.token);
                 setCurPwd(""); setNewPwd(""); setConfPwd("");
                 showMsg("Password changed successfully! 🔐");
             } else showMsg(data.message, "error");
-        } catch { showMsg("Server error. Try again.", "error"); }
+        } catch (e) { showMsg(e.message === "spinning_up" ? "Backend is spinning up." : "Server error. Try again.", "error"); }
         setPwdSaving(false);
     };
 
     const initials = getInitials(user?.name);
 
     if (loading) return (
-        <div style={{ minHeight: "100vh", backgroundImage: "url('/profile-bg.png')", backgroundSize: "cover", backgroundPosition: "center", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ minHeight: "100vh", background: "#0d0821", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <style>{CSS}</style>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
                 <Spinner />
@@ -130,7 +135,7 @@ export default function Profile() {
     const skills = user?.skills?.length ? user.skills : (analysis.extractedSkills || []);
 
     return (
-        <div style={{ minHeight: "100vh", backgroundImage: "url('/profile-bg.png')", backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed", color: "#f1f5f9", fontFamily: "'Inter',-apple-system,sans-serif", position: "relative", overflowX: "hidden" }}>
+        <div style={{ minHeight: "100vh", background: "#0d0821", color: "#f1f5f9", fontFamily: "'Inter',-apple-system,sans-serif", position: "relative", overflowX: "hidden" }}>
             <style>{CSS}</style>
 
             {/* Orbs */}
@@ -141,7 +146,7 @@ export default function Profile() {
             ].map((o, i) => (
                 <div key={i} style={{ position: "fixed", width: o.size, height: o.size, borderRadius: "50%", background: o.bg, filter: "blur(100px)", zIndex: 0, pointerEvents: "none", ...o }} />
             ))}
-            <div style={{ position: "fixed", inset: 0, background: "rgba(5,2,20,0.74)", backgroundImage: "linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px)", backgroundSize: "50px 50px", zIndex: 0, pointerEvents: "none" }} />
+            <div style={{ position: "fixed", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px)", backgroundSize: "50px 50px", zIndex: 0, pointerEvents: "none" }} />
 
 
             <div style={{ display: "flex", gap: "30px", padding: "40px 60px", maxWidth: "1400px", margin: "0 auto", position: "relative", zIndex: 10 }}>

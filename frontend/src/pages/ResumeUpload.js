@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuthUser, getInitials, logout } from "../services/auth";
+import { API_URL } from "../config";
 
 // ─── Score Ring ──────────────────────────────────────────────────────────────
 function ScoreRing({ score, size = 130, color }) {
@@ -100,12 +101,14 @@ export default function ResumeUpload() {
     fd.append("resume", file); fd.append("name", name);
     fd.append("email", email); fd.append("targetRole", targetRole);
     try {
-      const r = await fetch("http://localhost:5000/api/users/upload-pdf", { method: "POST", body: fd });
-      const d = await r.json();
+      const r = await fetch(`${API_URL}/api/users/upload-pdf`, { method: "POST", body: fd });
+      const text = await r.text();
+      let d;
+      try { d = JSON.parse(text); } catch (e) { throw new Error("spinning_up"); }
       if (!d.success) { setError(d.message || "Analysis failed"); setLoading(false); return; }
       sessionStorage.setItem("analysisData", JSON.stringify(d));
       setResults(d);
-    } catch { setError("Cannot reach server. Is backend running on port 5000?"); }
+    } catch (e) { setError(e.message === "spinning_up" ? "Backend is spinning up (free tier). Please wait ~50s and try again." : "Cannot reach server. Is backend running?"); }
     setLoading(false);
   };
 
@@ -117,10 +120,12 @@ export default function ResumeUpload() {
     const fd = new FormData();
     fd.append("resume", jdFile); fd.append("jdText", jdText);
     try {
-      const r = await fetch("http://localhost:5000/api/ai/jd-match", { method: "POST", body: fd });
-      const d = await r.json();
+      const r = await fetch(`${API_URL}/api/ai/jd-match`, { method: "POST", body: fd });
+      const text = await r.text();
+      let d;
+      try { d = JSON.parse(text); } catch (e) { throw new Error("spinning_up"); }
       if (!d.success) { setJdError(d.message || "JD match failed"); } else { setJdResults(d); }
-    } catch { setJdError("Cannot reach server."); }
+    } catch (e) { setJdError(e.message === "spinning_up" ? "Backend is spinning up (free tier). Please wait ~50s and try again." : "Cannot reach server."); }
     setJdLoading(false);
   };
 
@@ -131,8 +136,10 @@ export default function ResumeUpload() {
     setGhostLoading(true); setGhostSkills(null);
     const fd = new FormData(); fd.append("resume", f);
     try {
-      const r = await fetch("http://localhost:5000/api/ai/ghost-skills", { method: "POST", body: fd });
-      const d = await r.json();
+      const r = await fetch(`${API_URL}/api/ai/ghost-skills`, { method: "POST", body: fd });
+      const text = await r.text();
+      let d;
+      try { d = JSON.parse(text); } catch (e) { throw new Error("spinning_up"); }
       if (d.success) setGhostSkills(d.ghostSkills || []);
     } catch { }
     setGhostLoading(false);
@@ -144,11 +151,13 @@ export default function ResumeUpload() {
     if (!lines.length) return;
     setRewriteLoading(true); setRewrites(null);
     try {
-      const r = await fetch("http://localhost:5000/api/ai/rewrite-bullets", {
+      const r = await fetch(`${API_URL}/api/ai/rewrite-bullets`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ bullets: lines, targetRole: targetRole || "Software Engineer" }),
       });
-      const d = await r.json();
+      const text = await r.text();
+      let d;
+      try { d = JSON.parse(text); } catch (e) { throw new Error("spinning_up"); }
       if (d.success) setRewrites(d.rewrites || []);
     } catch { }
     setRewriteLoading(false);

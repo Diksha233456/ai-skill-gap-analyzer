@@ -11,7 +11,7 @@ const {
   generateSprintPlan,
   generateCareerIntel,
   compareCareerPaths,
-  whatIfSimulator,
+  path1, path2, currentSkills, newSkill, whatIfSimulator, analyzeCodingStats,
 } = require("../services/llmService");
 
 const upload = multer({ storage: multer.memoryStorage() });
@@ -126,6 +126,18 @@ router.post("/what-if", async (req, res) => {
     const { currentSkills, newSkill } = req.body;
     if (!newSkill) return res.status(400).json({ success: false, message: "New skill required" });
     const result = await whatIfSimulator(currentSkills || [], newSkill);
+    res.json({ success: true, ...result });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+/* ─── NEW: Coding Oracle ─── */
+router.post("/coding-oracle", async (req, res) => {
+  try {
+    const { codingStats, resumeSkills, targetRole } = req.body;
+    if (!codingStats) return res.status(400).json({ success: false, message: "Coding stats required" });
+    const result = await analyzeCodingStats(codingStats, resumeSkills || [], targetRole || "Software Engineer");
     res.json({ success: true, ...result });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
