@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuthUser, getInitials, logout } from "../services/auth";
+import API_BASE from "../config";
 
-const API = "http://localhost:5000";
+const API = API_BASE;
 
 /* ─── Animated SVG Score Ring ─── */
 function ScoreRing({ score, size = 160, stroke = 14, color = "#5b8cff" }) {
