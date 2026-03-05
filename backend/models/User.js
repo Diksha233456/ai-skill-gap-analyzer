@@ -6,6 +6,8 @@ const userSchema = new mongoose.Schema(
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true, select: false },
+    resetToken: { type: String, select: false },
+    resetTokenExpiry: { type: Date, select: false },
     targetRole: { type: String, default: "" },
     skills: { type: [String], default: [] },
     readinessScore: { type: Number, default: 0 },
@@ -30,7 +32,11 @@ const userSchema = new mongoose.Schema(
       easy: { type: Number, default: 0 },
       medium: { type: Number, default: 0 },
       hard: { type: Number, default: 0 },
-      lastUpdated: { type: Date, default: null }
+      platform: { type: String, default: "LeetCode" },
+      targetRole: { type: String, default: "" },
+      lastAnalysis: { type: mongoose.Schema.Types.Mixed, default: null },
+      updatedAt: { type: Date, default: null },
+      lastUpdated: { type: Date, default: null },
     },
     codingHistory: [
       {
