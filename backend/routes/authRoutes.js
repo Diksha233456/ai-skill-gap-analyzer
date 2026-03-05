@@ -173,7 +173,8 @@ router.post("/forgot-password", async (req, res) => {
         await user.save();
 
         // Return reset link directly (dev/demo mode — no email needed)
-        const resetUrl = `${process.env.CLIENT_URL || "http://localhost:3000"}/reset-password?token=${rawToken}`;
+        const resetUrl = `${process.env.CLIENT_URL || "https://ai-skill-gap-analyzer-2-wnov.onrender.com"}/reset-password?token=${rawToken}`;
+
 
         res.json({ success: true, message: "Reset link generated!", resetUrl });
     } catch (err) {
