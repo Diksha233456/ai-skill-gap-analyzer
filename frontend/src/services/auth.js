@@ -15,7 +15,7 @@ export function logout() {
     localStorage.removeItem("token");
     localStorage.removeItem("authUser");
     sessionStorage.removeItem("analysisData");
-    window.location.href = "/login";
+    window.location.replace(window.location.origin + "/login");
 }
 
 export function getInitials(name) {
